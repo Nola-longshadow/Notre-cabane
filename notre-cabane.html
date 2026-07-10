@@ -1,1337 +1,1501 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Notre Cabane</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;1,400;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>
-/* ─── TOKENS ─────────────────────────────────────── */
-:root {
-  --ink:        #1c1208;
-  --paper:      #f0e8d0;
-  --paper-dark: #e0d4b0;
-  --bark:       #5c3a1e;
-  --bark-light: #7a5030;
-  --moss:       #3a4f28;
-  --moss-dark:  #1e2d10;
-  --amber:      #e8920a;
-  --gold:       #f5c030;
-  --ember:      #c84010;
-  --sky-night:  #080e04;
-  --mist:       rgba(180,200,160,0.08);
-  --serif:      'Playfair Display', Georgia, serif;
-  --script:     'Caveat', cursive;
-}
+  :root {
+    --dark: #0d0f0b;
+    --forest: #111a10;
+    --bark: #2a1f14;
+    --moss: #1e2d1a;
+    --amber: #c8813a;
+    --amber-glow: #e8a050;
+    --cream: #f0e8d5;
+    --fog: rgba(180,200,160,0.12);
+    --text: #d4c9b0;
+    --muted: #7a8c6e;
+    --window-on: #f5d08a;
+    --window-off: #1a2018;
+  }
 
-/* ─── RESET & BASE ───────────────────────────────── */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html, body { width:100%; height:100%; overflow:hidden; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-body {
-  font-family: var(--script);
-  background: var(--sky-night);
-  color: var(--paper);
-  cursor: none;
-}
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
 
-/* ─── CUSTOM CURSOR ──────────────────────────────── */
-#cursor {
-  position: fixed;
-  width: 12px; height: 12px;
-  border: 1.5px solid rgba(245,192,48,0.7);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  transition: transform 0.15s ease, opacity 0.3s;
-  transform: translate(-50%,-50%);
-}
-#cursor.hovering {
-  transform: translate(-50%,-50%) scale(2.5);
-  background: rgba(245,192,48,0.1);
-}
+  /* ---- FOREST SCENE ---- */
+  #scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
 
-/* ─── SCENE CONTAINER ────────────────────────────── */
-#scene {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
+  #sky {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, #1a2a1a 0%, #0d0f0b 60%);
+    transition: background 4s ease;
+  }
 
-/* ─── SKY ─────────────────────────────────────────── */
-#sky {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 30% 20%, #0d1a08 0%, #060c03 60%, #030703 100%);
-  transition: background 4s ease;
-  z-index: 0;
-}
-#sky.sun-sky   { background: radial-gradient(ellipse at 25% 15%, #1a3d6a 0%, #0e2240 50%, #0a1a08 100%); }
-#sky.rain-sky  { background: radial-gradient(ellipse at 50% 0%, #1a2535 0%, #0d1520 60%, #080e08 100%); }
-#sky.snow-sky  { background: radial-gradient(ellipse at 40% 10%, #1e2a3a 0%, #10181e 60%, #080c0a 100%); }
-#sky.love-sky  { background: radial-gradient(ellipse at 60% 20%, #0d1a0a 0%, #060c04 60%, #030703 100%); }
+  /* Stars */
+  .stars {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,220,0.8);
+    animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.2; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+  }
 
-/* ─── STARS ───────────────────────────────────────── */
-#stars {
-  position: absolute; inset: 0; z-index: 1;
-  transition: opacity 3s ease;
-}
-.star {
-  position: absolute;
-  border-radius: 50%;
-  background: white;
-  animation: twinkle var(--d,3s) ease-in-out infinite alternate;
-  animation-delay: var(--dl,0s);
-}
-@keyframes twinkle {
-  from { opacity:0.1; transform:scale(0.7); }
-  to   { opacity:1;   transform:scale(1.3); }
-}
+  /* Trees */
+  #trees {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 85%;
+    pointer-events: none;
+  }
 
-/* ─── MOON ────────────────────────────────────────── */
-#moon {
-  position: absolute;
-  top: 6%; right: 12%;
-  width: 54px; height: 54px;
-  background: radial-gradient(circle at 38% 38%, #f8f0d8, #c8b87a);
-  border-radius: 50%;
-  box-shadow: 0 0 30px rgba(248,240,200,0.3), 0 0 80px rgba(248,240,200,0.1);
-  animation: moonPulse 5s ease-in-out infinite alternate;
-  z-index: 2;
-  transition: opacity 3s ease;
-}
-@keyframes moonPulse {
-  from { box-shadow: 0 0 20px rgba(248,240,200,0.25), 0 0 50px rgba(248,240,200,0.08); }
-  to   { box-shadow: 0 0 45px rgba(248,240,200,0.45), 0 0 100px rgba(248,240,200,0.15); }
-}
+  /* Ground */
+  #ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(to top, #0a0d09, #111a10 60%, transparent);
+  }
 
-/* ─── SUN ─────────────────────────────────────────── */
-#sun {
-  position: absolute;
-  top: 7%; left: 14%;
-  width: 64px; height: 64px;
-  background: radial-gradient(circle, #ffe080 0%, #ffb020 60%, #e86010 100%);
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 3s ease;
-  z-index: 2;
-  animation: sunPulse 4s ease-in-out infinite alternate;
-}
-@keyframes sunPulse {
-  from { box-shadow: 0 0 40px rgba(255,200,0,0.5), 0 0 80px rgba(255,150,0,0.2); }
-  to   { box-shadow: 0 0 70px rgba(255,200,0,0.8), 0 0 140px rgba(255,150,0,0.35); }
-}
+  /* Cabin */
+  #cabin-wrap {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    z-index: 10;
+  }
 
-/* ─── WEATHER PARTICLES ──────────────────────────── */
-#weather-layer {
-  position: absolute; inset: 0;
-  pointer-events: none; z-index: 3;
-  overflow: hidden;
-}
-.raindrop {
-  position: absolute; top: -120px;
-  width: 1px;
-  background: linear-gradient(transparent, rgba(160,200,255,0.5));
-  animation: rainFall var(--d,0.8s) linear infinite;
-  animation-delay: var(--dl,0s);
-}
-@keyframes rainFall { to { transform: translateY(110vh); } }
+  /* Smoke */
+  .smoke-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(180,180,160,0.15);
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: rise 4s ease-out infinite;
+    pointer-events: none;
+  }
+  .smoke-particle:nth-child(2) { animation-delay: 1.3s; }
+  .smoke-particle:nth-child(3) { animation-delay: 2.6s; }
+  @keyframes rise {
+    0% { opacity: 0; transform: translateX(-50%) scale(0.5); top: -5px; }
+    20% { opacity: 0.4; }
+    100% { opacity: 0; transform: translateX(calc(-50% + 20px)) scale(3); top: -80px; }
+  }
 
-.snowflake {
-  position: absolute; top: -20px;
-  color: rgba(255,255,255,0.75);
-  animation: snowFall var(--d,8s) linear infinite;
-  animation-delay: var(--dl,0s);
-}
-@keyframes snowFall {
-  0%   { transform: translateY(0) rotate(0deg) translateX(0); opacity:0.8; }
-  50%  { transform: translateY(50vh) rotate(180deg) translateX(30px); }
-  100% { transform: translateY(110vh) rotate(360deg) translateX(-20px); opacity:0.2; }
-}
+  /* Window glow */
+  #window-glow {
+    position: absolute;
+    width: 60px;
+    height: 45px;
+    background: var(--window-off);
+    border-radius: 2px;
+    top: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: background 2s ease, box-shadow 2s ease;
+    z-index: 2;
+  }
+  #window-glow.lit {
+    background: var(--window-on);
+    box-shadow: 0 0 30px 15px rgba(245, 208, 138, 0.3), 0 0 80px 30px rgba(245, 208, 138, 0.1);
+  }
+  #window-glow.both {
+    background: #f5c060;
+    box-shadow: 0 0 40px 20px rgba(245, 192, 96, 0.5), 0 0 120px 50px rgba(245, 192, 96, 0.15);
+  }
 
-.firefly {
-  position: absolute;
-  width: 3px; height: 3px;
-  background: #b8f040;
-  border-radius: 50%;
-  animation: fireflyDrift var(--d,9s) ease-in-out infinite,
-             fireflyBlink 1.8s ease-in-out infinite alternate;
-  animation-delay: var(--dl,0s);
-}
-@keyframes fireflyDrift {
-  0%   { transform: translate(0,0); }
-  25%  { transform: translate(var(--x1,30px), var(--y1,-20px)); }
-  50%  { transform: translate(var(--x2,-20px), var(--y2,10px)); }
-  75%  { transform: translate(var(--x3,10px), var(--y3,-30px)); }
-  100% { transform: translate(0,0); }
-}
-@keyframes fireflyBlink {
-  from { box-shadow: 0 0 3px 2px rgba(184,240,64,0.4); opacity:0.2; }
-  to   { box-shadow: 0 0 8px 5px rgba(184,240,64,0.9); opacity:1; }
-}
+  /* Ground glow from window */
+  #ground-glow {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 40px solid transparent;
+    border-right: 40px solid transparent;
+    border-top: 60px solid transparent;
+    transition: border-top-color 2s ease;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+  #ground-glow.lit { border-top-color: rgba(245,208,138,0.2); }
 
-/* ─── FOREST ──────────────────────────────────────── */
-#forest { position:absolute; inset:0; z-index:4; pointer-events:none; }
+  /* Fireplace */
+  #fireplace {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 40px;
+    display: none;
+    z-index: 3;
+    pointer-events: none;
+  }
+  #fireplace.active { display: block; }
+  .flame {
+    position: absolute;
+    bottom: 0;
+    border-radius: 50% 50% 30% 30%;
+    animation: flicker var(--fd, 0.6s) ease-in-out infinite alternate;
+    transform-origin: bottom center;
+  }
+  @keyframes flicker {
+    0% { transform: scaleX(1) scaleY(1) rotate(-2deg); opacity: 0.9; }
+    100% { transform: scaleX(0.85) scaleY(1.15) rotate(2deg); opacity: 1; }
+  }
 
-/* ─── GROUND MIST ────────────────────────────────── */
-#mist-layer {
-  position: absolute; bottom:0; left:0; right:0;
-  height: 180px; z-index: 6; pointer-events:none;
-  background: linear-gradient(transparent, rgba(140,180,120,0.06) 60%, rgba(100,140,80,0.12));
-  animation: mistDrift 8s ease-in-out infinite alternate;
-}
-@keyframes mistDrift {
-  from { transform: scaleX(1) translateX(0); opacity:0.6; }
-  to   { transform: scaleX(1.05) translateX(-20px); opacity:1; }
-}
+  /* Fireflies */
+  .firefly {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(220,255,150,0.9);
+    animation: fly var(--fly-d, 8s) ease-in-out infinite var(--fly-delay, 0s), pulse 1.5s ease-in-out infinite var(--fly-delay, 0s);
+    pointer-events: none;
+    display: none;
+  }
+  .firefly.active { display: block; }
+  @keyframes fly {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(var(--x1), var(--y1)); }
+    50% { transform: translate(var(--x2), var(--y2)); }
+    75% { transform: translate(var(--x3), var(--y3)); }
+    100% { transform: translate(0,0); }
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 0.1; }
+    50% { opacity: 1; box-shadow: 0 0 6px 2px rgba(220,255,150,0.6); }
+  }
 
-/* ─── CABIN WRAP ─────────────────────────────────── */
-#cabin-wrap {
-  position: absolute;
-  bottom: 22%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  width: 320px;
-}
+  /* Rain */
+  .raindrop {
+    position: absolute;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(150,180,200,0.5));
+    animation: fall linear infinite;
+    display: none;
+    pointer-events: none;
+  }
+  .raindrop.active { display: block; }
+  @keyframes fall {
+    0% { top: -20%; opacity: 0; }
+    10% { opacity: 1; }
+    100% { top: 110%; opacity: 0.3; }
+  }
 
-/* Window glow aura */
-#win-glow {
-  position: absolute;
-  top: 38%; left: 26%;
-  width: 68px; height: 50px;
-  border-radius: 50%;
-  background: transparent;
-  filter: blur(18px);
-  pointer-events: none;
-  transition: background 2.5s ease, box-shadow 2.5s ease;
-  z-index: 11;
-}
-#win-glow.lit    { background: rgba(245,192,48,0.45); box-shadow: 0 0 50px 20px rgba(245,192,48,0.2); }
-#win-glow.both   { background: rgba(220,120,30,0.6);  box-shadow: 0 0 70px 30px rgba(220,120,30,0.3); }
+  /* Snow */
+  .snowflake {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(220,235,255,0.8);
+    animation: drift linear infinite, sway ease-in-out infinite alternate;
+    display: none;
+    pointer-events: none;
+  }
+  .snowflake.active { display: block; }
+  @keyframes drift {
+    from { top: -10px; opacity: 0; }
+    5% { opacity: 0.8; }
+    to { top: 105%; opacity: 0; }
+  }
+  @keyframes sway {
+    from { margin-left: 0; }
+    to { margin-left: 30px; }
+  }
 
-/* Chimney smoke */
-.smoke-puff {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(190,185,175,0.25);
-  animation: smokeDrift var(--d,3s) ease-out infinite;
-  animation-delay: var(--dl,0s);
-  pointer-events: none;
-}
-@keyframes smokeDrift {
-  0%   { transform: translateY(0) scale(0.4); opacity:0.7; }
-  100% { transform: translateY(-80px) translateX(var(--x,8px)) scale(2.5); opacity:0; }
-}
+  /* Sun rays */
+  #sun {
+    position: absolute;
+    top: 60px;
+    right: 120px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,220,100,0.9) 30%, rgba(255,200,60,0.4) 60%, transparent 70%);
+    display: none;
+    pointer-events: none;
+    animation: sunpulse 4s ease-in-out infinite;
+  }
+  #sun.active { display: block; }
+  @keyframes sunpulse {
+    0%,100% { box-shadow: 0 0 40px 20px rgba(255,220,100,0.2); }
+    50% { box-shadow: 0 0 80px 40px rgba(255,220,100,0.3); }
+  }
 
-/* ─── GROUND ──────────────────────────────────────── */
-#ground {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 25%;
-  background: linear-gradient(180deg, #1a2a0e 0%, #101808 100%);
-  z-index: 8;
-}
-#path {
-  position: absolute;
-  bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 90px; height: 100%;
-  background: linear-gradient(180deg, rgba(80,58,30,0.5) 0%, rgba(70,50,20,0.3) 100%);
-  clip-path: polygon(38% 0%, 62% 0%, 78% 100%, 22% 100%);
-}
+  /* ---- UI OVERLAY ---- */
+  #ui {
+    position: relative;
+    z-index: 100;
+    min-height: 100vh;
+    pointer-events: none;
+  }
 
-/* ─── CAMPFIRE ────────────────────────────────────── */
-#campfire-wrap {
-  position: absolute;
-  bottom: 24%;
-  left: calc(50% + 100px);
-  transform: translateX(-50%);
-  z-index: 12;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-#campfire-wrap:hover { transform: translateX(-50%) scale(1.08); }
-#campfire-wrap .label {
-  text-align:center;
-  font-size: 0.78rem;
-  color: rgba(245,192,48,0.6);
-  margin-top: 2px;
-  letter-spacing: 0.05em;
-}
+  /* Header */
+  #header {
+    text-align: center;
+    padding: 2.5rem 1rem 1rem;
+    pointer-events: none;
+  }
+  #title {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--cream);
+    letter-spacing: 0.05em;
+    opacity: 0.9;
+    text-shadow: 0 0 40px rgba(200,180,130,0.3);
+  }
+  #status-msg {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    transition: all 1.5s ease;
+    min-height: 1.5em;
+  }
 
-#fire-glow {
-  position: absolute;
-  bottom: 24%;
-  left: calc(50% + 100px);
-  transform: translateX(-50%);
-  width: 70px; height: 70px;
-  border-radius: 50%;
-  background: rgba(220,100,20,0);
-  filter: blur(22px);
-  pointer-events: none;
-  z-index: 11;
-  transition: background 2s ease;
-}
-#fire-glow.active { background: rgba(220,100,20,0.5); box-shadow: 0 0 60px 20px rgba(200,64,16,0.25); }
+  /* Panels — floating around scene */
+  .panel {
+    position: fixed;
+    pointer-events: all;
+    z-index: 200;
+  }
 
-/* Flames */
-.flame {
-  transform-origin: bottom center;
-  animation: flicker var(--d,0.75s) ease-in-out infinite alternate;
-  animation-delay: var(--dl,0s);
-}
-@keyframes flicker {
-  from { transform: scaleY(1) scaleX(1) rotate(var(--r1,-2deg)); }
-  to   { transform: scaleY(1.18) scaleX(0.88) rotate(var(--r2,2deg)); }
-}
+  /* Left panel — météo + présence */
+  #panel-left {
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
 
-/* ─── MAILBOX ────────────────────────────────────── */
-#mailbox-wrap {
-  position: absolute;
-  bottom: 24%;
-  left: calc(50% - 130px);
-  transform: translateX(-50%);
-  z-index: 12;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-#mailbox-wrap:hover { transform: translateX(-50%) scale(1.08); }
-#mailbox-wrap .label {
-  text-align:center;
-  font-size: 0.78rem;
-  color: rgba(240,230,200,0.5);
-  margin-top: 2px;
-  letter-spacing: 0.05em;
-}
+  /* Right panel — notes + carnet */
+  #panel-right {
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
 
-/* ─── TREE NOTES ─────────────────────────────────── */
-.tree-note {
-  position: absolute;
-  cursor: pointer;
-  z-index: 20;
-  animation: sway var(--sw,4s) ease-in-out infinite alternate;
-  transition: filter 0.3s;
-}
-.tree-note:hover { filter: brightness(1.2) drop-shadow(0 0 6px rgba(245,192,48,0.6)); }
-@keyframes sway {
-  from { transform: rotate(var(--ra,-3deg)); }
-  to   { transform: rotate(var(--rb,3deg)); }
-}
+  /* Bottom panel — souvenirs */
+  #panel-bottom {
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+  }
 
-/* ─── BOTTOM NAV ─────────────────────────────────── */
-#nav {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  z-index: 80;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 16px 14px;
-  background: linear-gradient(transparent, rgba(4,8,2,0.85));
-  pointer-events: all;
-}
-.nav-btn {
-  background: rgba(240,232,208,0.07);
-  border: 1px solid rgba(240,232,208,0.14);
-  color: rgba(240,232,208,0.8);
-  font-family: var(--script);
-  font-size: 0.9rem;
-  padding: 7px 15px;
-  border-radius: 30px;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: all 0.25s ease;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-.nav-btn:hover {
-  background: rgba(240,232,208,0.15);
-  border-color: rgba(240,232,208,0.3);
-  color: var(--paper);
-  transform: translateY(-2px);
-}
+  /* Icon buttons */
+  .icon-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(180,160,120,0.25);
+    background: rgba(13,15,11,0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--muted);
+    position: relative;
+  }
+  .icon-btn:hover {
+    border-color: rgba(200,129,58,0.5);
+    color: var(--amber);
+    background: rgba(20,18,14,0.85);
+    transform: scale(1.08);
+  }
+  .icon-btn.active {
+    border-color: var(--amber);
+    color: var(--amber);
+    box-shadow: 0 0 12px rgba(200,129,58,0.3);
+  }
+  .icon-btn .tooltip {
+    position: absolute;
+    right: 58px;
+    background: rgba(13,15,11,0.9);
+    border: 1px solid rgba(180,160,120,0.2);
+    color: var(--cream);
+    font-family: 'Caveat', cursive;
+    font-size: 0.95rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .icon-btn:hover .tooltip { opacity: 1; }
+  #panel-right .icon-btn .tooltip {
+    right: auto;
+    left: 58px;
+  }
+  #panel-bottom .icon-btn .tooltip {
+    right: auto;
+    bottom: 58px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 
-/* ─── AMBIENT TOGGLE ─────────────────────────────── */
-#ambient-btn {
-  position: fixed;
-  top: 16px; right: 16px;
-  z-index: 80;
-  background: rgba(240,232,208,0.07);
-  border: 1px solid rgba(240,232,208,0.12);
-  color: rgba(240,232,208,0.6);
-  font-family: var(--script);
-  font-size: 0.85rem;
-  padding: 6px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: all 0.25s;
-}
-#ambient-btn:hover { background: rgba(240,232,208,0.13); color: var(--paper); }
+  /* Sound toggle */
+  #sound-btn {
+    position: fixed;
+    top: 1.2rem;
+    right: 1.2rem;
+    z-index: 300;
+    pointer-events: all;
+  }
 
-/* ─── STATUS PILL ─────────────────────────────────── */
-#status-pill {
-  position: fixed;
-  top: 16px; left: 50%;
-  transform: translateX(-50%);
-  z-index: 80;
-  background: rgba(4,8,2,0.55);
-  border: 1px solid rgba(240,232,208,0.1);
-  color: rgba(240,232,208,0.7);
-  font-family: var(--script);
-  font-size: 0.9rem;
-  padding: 6px 18px;
-  border-radius: 20px;
-  backdrop-filter: blur(8px);
-  transition: all 1s ease;
-  white-space: nowrap;
-  pointer-events: none;
-}
+  /* ---- MODALS ---- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5,7,4,0.8);
+    backdrop-filter: blur(6px);
+    z-index: 500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
 
-/* ─── OVERLAY + PANELS ───────────────────────────── */
-#overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(2,5,1,0.65);
-  z-index: 90;
-  backdrop-filter: blur(3px);
-  animation: fadeIn 0.3s ease;
-}
-#overlay.open { display: block; }
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  .modal {
+    background: #141a11;
+    border: 1px solid rgba(180,160,120,0.2);
+    border-radius: 4px;
+    padding: 2rem;
+    width: min(90vw, 480px);
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    font-family: 'Crimson Pro', serif;
+  }
+  .modal::-webkit-scrollbar { width: 4px; }
+  .modal::-webkit-scrollbar-thumb { background: rgba(180,160,120,0.2); }
 
-.panel {
-  display: none;
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%) scale(0.92) rotate(-0.5deg);
-  z-index: 100;
-  width: min(420px, 94vw);
-  max-height: 88vh;
-  overflow-y: auto;
-  background: var(--paper);
-  border-radius: 3px;
-  padding: 28px 28px 24px;
-  color: var(--ink);
-  box-shadow: 0 24px 80px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,0,0,0.06);
-  animation: panelIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
-}
-.panel.open { display: block; }
-@keyframes panelIn {
-  from { transform: translate(-50%,-48%) scale(0.9) rotate(-1deg); opacity:0; }
-  to   { transform: translate(-50%,-50%) scale(1)   rotate(-0.4deg); opacity:1; }
-}
+  .modal-title {
+    font-family: 'Caveat', cursive;
+    font-size: 1.6rem;
+    color: var(--cream);
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid rgba(180,160,120,0.15);
+    padding-bottom: 0.6rem;
+  }
 
-/* Paper texture lines */
-.panel::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: repeating-linear-gradient(transparent, transparent 28px, rgba(0,0,0,0.04) 29px);
-  background-size: 100% 29px;
-  background-position: 0 44px;
-  pointer-events: none;
-  border-radius: 3px;
-}
+  .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--cream); }
 
-.panel h2 {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 1.55rem;
-  color: var(--bark);
-  margin-bottom: 4px;
-}
-.panel .subtitle {
-  font-size: 0.95rem;
-  color: rgba(28,18,8,0.45);
-  font-style: italic;
-  margin-bottom: 18px;
-}
-.panel-close {
-  position: absolute; top: 14px; right: 16px;
-  background: none; border: none;
-  font-size: 1.3rem; cursor: pointer;
-  color: rgba(28,18,8,0.35);
-  transition: color 0.2s, transform 0.2s;
-  line-height: 1;
-}
-.panel-close:hover { color: var(--bark); transform: rotate(90deg); }
+  /* Notes sur les arbres */
+  .tree-note {
+    background: rgba(42,31,20,0.6);
+    border: 1px solid rgba(180,160,120,0.15);
+    border-radius: 2px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.8rem;
+    font-style: italic;
+    color: var(--text);
+    font-size: 1rem;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tree-note::before {
+    content: '🪢';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+  }
+  .tree-note:hover { border-color: rgba(200,129,58,0.4); }
+  .tree-note .note-from {
+    font-style: normal;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+  }
 
-/* ─── PANEL: PRESENCE ────────────────────────────── */
-.presence-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  background: rgba(0,0,0,0.04);
-  border-radius: 6px;
-  margin-bottom: 8px;
-  font-size: 1.05rem;
-}
-.dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.dot.on  { background:#5a9a50; box-shadow:0 0 0 3px rgba(90,154,80,0.25); animation:dotPulse 2s infinite; }
-.dot.off { background:#bbb; }
-@keyframes dotPulse { 50% { transform:scale(1.4); box-shadow:0 0 0 5px rgba(90,154,80,0.15); } }
+  textarea, input[type="text"] {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(180,160,120,0.2);
+    border-radius: 2px;
+    color: var(--cream);
+    font-family: 'Caveat', cursive;
+    font-size: 1.1rem;
+    padding: 0.7rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 0.6rem;
+  }
+  textarea:focus, input[type="text"]:focus {
+    border-color: rgba(200,129,58,0.4);
+  }
+  textarea { min-height: 80px; }
 
-/* ─── PANEL: WEATHER ─────────────────────────────── */
-.weather-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
-.w-btn {
-  padding: 14px 10px;
-  border: 1.5px solid rgba(0,0,0,0.1);
-  background: rgba(255,255,255,0.5);
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: var(--script);
-  font-size: 1.0rem;
-  text-align: center;
-  color: var(--ink);
-  transition: all 0.2s ease;
-}
-.w-btn:hover { background: rgba(0,0,0,0.06); transform:translateY(-2px); }
-.w-btn.selected { background: rgba(92,58,30,0.1); border-color: rgba(92,58,30,0.4); }
-.w-btn em { display:block; font-style:normal; font-size: 1.7rem; margin-bottom: 4px; }
+  .btn {
+    background: rgba(200,129,58,0.15);
+    border: 1px solid rgba(200,129,58,0.35);
+    color: var(--amber);
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(200,129,58,0.25); }
 
-/* ─── PANEL: ENTRIES (journal/mailbox) ───────────── */
-.entry-list { max-height: 200px; overflow-y:auto; margin-bottom: 12px; scrollbar-width:thin; }
-.entry {
-  padding: 9px 12px;
-  border-left: 2px solid rgba(92,58,30,0.25);
-  margin-bottom: 8px;
-  font-size: 1.0rem;
-  line-height: 1.5;
-  color: var(--ink);
-}
-.entry .meta { font-size:0.8rem; color:rgba(28,18,8,0.38); margin-bottom:3px; }
+  /* Météo selection */
+  .meteo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .meteo-option {
+    border: 1px solid rgba(180,160,120,0.2);
+    border-radius: 2px;
+    padding: 0.7rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.02);
+  }
+  .meteo-option:hover { border-color: rgba(200,129,58,0.4); background: rgba(200,129,58,0.08); }
+  .meteo-option.selected { border-color: var(--amber); background: rgba(200,129,58,0.15); }
+  .meteo-icon { font-size: 1.8rem; display: block; margin-bottom: 0.3rem; }
+  .meteo-label { font-family: 'Caveat', cursive; font-size: 0.95rem; color: var(--text); }
+  .meteo-desc { font-size: 0.8rem; color: var(--muted); font-style: italic; }
 
-.cabin-input {
-  width: 100%;
-  min-height: 72px;
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(0,0,0,0.12);
-  border-radius: 4px;
-  padding: 10px 12px;
-  font-family: var(--script);
-  font-size: 1.08rem;
-  color: var(--ink);
-  resize: none;
-  outline: none;
-  transition: border-color 0.2s;
-  display: block;
-  margin-bottom: 8px;
-}
-.cabin-input:focus { border-color: rgba(92,58,30,0.4); }
+  /* Souvenirs */
+  .memory-item {
+    border: 1px solid rgba(180,160,120,0.15);
+    border-radius: 2px;
+    padding: 0.8rem;
+    margin-bottom: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .memory-item:hover { border-color: rgba(200,129,58,0.3); }
+  .memory-type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.3rem; }
+  .memory-content { font-style: italic; color: var(--text); }
+  .memory-date { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
 
-.btn {
-  width: 100%;
-  padding: 10px;
-  background: var(--bark);
-  color: var(--paper);
-  border: none;
-  border-radius: 4px;
-  font-family: var(--script);
-  font-size: 1.05rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  letter-spacing: 0.03em;
-}
-.btn:hover { background: var(--bark-light); transform:translateY(-1px); }
-.btn.secondary { background: rgba(0,0,0,0.12); color: var(--ink); margin-top:6px; }
-.btn.secondary:hover { background: rgba(0,0,0,0.18); }
+  .memory-form { border-top: 1px solid rgba(180,160,120,0.1); margin-top: 1rem; padding-top: 1rem; }
+  select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(180,160,120,0.2);
+    border-radius: 2px;
+    color: var(--cream);
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    padding: 0.5rem;
+    outline: none;
+    margin-bottom: 0.6rem;
+  }
+  select option { background: #141a11; }
 
-/* ─── PANEL: MEMORIES ────────────────────────────── */
-#memory-card {
-  background: rgba(255,255,255,0.55);
-  border-radius: 6px;
-  padding: 20px;
-  text-align: center;
-  min-height: 110px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-  border: 1px dashed rgba(0,0,0,0.15);
-  transition: all 0.4s ease;
-}
-#memory-card .mem-emoji { font-size: 2rem; margin-bottom: 8px; }
-#memory-card .mem-text  { font-style:italic; font-size:1.1rem; line-height:1.5; color:var(--ink); }
+  /* Carnet */
+  .journal-entry {
+    border-left: 2px solid rgba(180,160,120,0.2);
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .journal-entry .entry-date { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.2rem; }
+  .journal-entry .entry-text { font-style: italic; font-size: 1rem; }
+  .journal-entry .entry-author { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
 
-/* ─── NOTE POPUP ──────────────────────────────────── */
-#note-popup {
-  display: none;
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%) rotate(-1.5deg);
-  z-index: 120;
-  width: min(300px, 86vw);
-  background: #f5edce;
-  border-radius: 2px;
-  padding: 28px 28px 20px;
-  box-shadow: 4px 6px 30px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(0,0,0,0.06);
-  font-family: var(--script);
-  color: var(--ink);
-  font-size: 1.2rem;
-  line-height: 1.65;
-  cursor: pointer;
-  animation: noteIn 0.3s ease;
-}
-@keyframes noteIn {
-  from { transform: translate(-50%,-46%) rotate(-2.5deg); opacity:0; }
-  to   { transform: translate(-50%,-50%) rotate(-1.5deg); opacity:1; }
-}
-/* twine */
-#note-popup::before {
-  content: '';
-  position: absolute; top:-16px; left:50%;
-  transform: translateX(-50%);
-  width: 1.5px; height: 18px;
-  background: linear-gradient(#8b6040, #6a4828);
-}
-/* thumbtack */
-#note-popup::after {
-  content: '·';
-  position: absolute; top:-22px; left:50%;
-  transform: translateX(-50%);
-  width: 10px; height: 10px;
-  background: #c8a860;
-  border-radius: 50%;
-  font-size: 0; line-height: 0;
-}
-#note-popup .note-close-hint {
-  display: block;
-  font-size: 0.78rem;
-  color: rgba(28,18,8,0.3);
-  text-align: center;
-  margin-top: 14px;
-  font-style: italic;
-}
+  /* Presence indicator */
+  #presence-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3d4d30;
+    display: inline-block;
+    margin-right: 6px;
+    transition: all 1s ease;
+  }
+  #presence-dot.one { background: var(--amber); box-shadow: 0 0 6px rgba(200,129,58,0.5); }
+  #presence-dot.both { background: #c8f0a0; box-shadow: 0 0 8px rgba(200,240,160,0.5); }
 
-/* ─── ENGRAVINGS ON CABIN ────────────────────────── */
-#engraving-display {
-  position: absolute;
-  bottom: 30%; left: 50%;
-  transform: translateX(-50%);
-  z-index: 15;
-  pointer-events: none;
-  text-align: center;
-  opacity: 0;
-  transition: opacity 2s ease;
-  font-size: 0.78rem;
-  color: rgba(92,58,30,0.45);
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
+  /* Fireplace modal (click on feu) */
+  #fire-hint {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Caveat', cursive;
+    font-size: 0.9rem;
+    color: var(--muted);
+    pointer-events: none;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 1s;
+    text-align: center;
+    white-space: nowrap;
+  }
 
-/* ─── UTILITY ─────────────────────────────────────── */
-.divider {
-  border: none;
-  border-top: 1px dashed rgba(0,0,0,0.12);
-  margin: 14px 0;
-}
-.dim { color: rgba(28,18,8,0.4); font-style:italic; font-size:0.9rem; }
+  /* Boîte aux lettres */
+  #mailbox {
+    position: fixed;
+    bottom: 70px;
+    left: calc(50% + 80px);
+    z-index: 150;
+    cursor: pointer;
+    font-size: 1.5rem;
+    pointer-events: all;
+    transition: transform 0.3s;
+    filter: drop-shadow(0 0 0px orange);
+  }
+  #mailbox:hover { transform: scale(1.15); }
+  #mailbox.has-mail { filter: drop-shadow(0 0 8px rgba(200,129,58,0.6)); animation: mailpop 2s ease-in-out infinite; }
+  @keyframes mailpop {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  #mailbox-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--amber);
+    color: #0d0f0b;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    font-family: 'Caveat', cursive;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    display: none;
+  }
 
-/* scrollbar */
-.entry-list::-webkit-scrollbar { width:4px; }
-.entry-list::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.15); border-radius:2px; }
+  /* Gravures */
+  #engravings {
+    position: fixed;
+    bottom: 80px;
+    left: calc(50% - 140px);
+    z-index: 150;
+    cursor: pointer;
+    font-size: 1.1rem;
+    pointer-events: all;
+    color: var(--muted);
+    font-family: 'Caveat', cursive;
+    transition: color 0.3s;
+    text-shadow: none;
+  }
+  #engravings:hover { color: var(--amber); }
+
+  /* Who am I selector */
+  #who-am-i {
+    position: fixed;
+    top: 1.2rem;
+    left: 1.2rem;
+    z-index: 300;
+    pointer-events: all;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .who-btn {
+    background: rgba(13,15,11,0.7);
+    border: 1px solid rgba(180,160,120,0.25);
+    border-radius: 20px;
+    color: var(--muted);
+    font-family: 'Caveat', cursive;
+    font-size: 0.9rem;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+  }
+  .who-btn:hover { border-color: rgba(200,129,58,0.4); color: var(--amber); }
+  .who-btn.active { border-color: var(--amber); color: var(--amber); background: rgba(200,129,58,0.12); }
+
+  /* Random memory flash */
+  #memory-flash {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: rgba(13,15,11,0.92);
+    border: 1px solid rgba(180,160,120,0.2);
+    border-radius: 4px;
+    padding: 2rem 2.5rem;
+    font-family: 'Caveat', cursive;
+    font-size: 1.4rem;
+    color: var(--cream);
+    text-align: center;
+    max-width: 360px;
+    z-index: 600;
+    display: none;
+    backdrop-filter: blur(12px);
+    animation: fadeInOut 4s ease forwards;
+  }
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+    15% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Scrollbar general */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(180,160,120,0.2); border-radius: 2px; }
+
+  @media (max-width: 700px) {
+    #panel-left, #panel-right { display: none; }
+    #panel-bottom { bottom: 1rem; gap: 0.5rem; }
+    .icon-btn { width: 42px; height: 42px; }
+    #cabin-wrap { width: 220px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- Custom cursor -->
-<div id="cursor"></div>
+<!-- SOUND -->
+<audio id="rain-audio" loop>
+  <source src="https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3" type="audio/mpeg">
+</audio>
+<audio id="forest-audio" loop>
+  <source src="https://assets.mixkit.co/active_storage/sfx/2517/2517-preview.mp3" type="audio/mpeg">
+</audio>
 
-<!-- Status pill -->
-<div id="status-pill">🌙 La cabane attend...</div>
-
-<!-- Ambient sound button -->
-<button id="ambient-btn" onclick="toggleAmbient()">🎵 Ambiance</button>
-
-<!-- ═══ SCENE ═══════════════════════════════════════ -->
+<!-- SCENE -->
 <div id="scene">
-
-  <!-- Sky -->
-  <div id="sky">
-    <div id="stars"></div>
-  </div>
-
-  <!-- Moon / Sun -->
-  <div id="moon"></div>
+  <div id="sky"></div>
+  <div class="stars" id="stars"></div>
   <div id="sun"></div>
 
   <!-- Weather particles -->
-  <div id="weather-layer"></div>
+  <div id="particles"></div>
 
-  <!-- Forest SVG -->
-  <svg id="forest" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;z-index:4;pointer-events:none;">
-    <!-- Far trees -->
-    <g opacity="0.28">
-      <polygon points="0,700 55,460 110,700"   fill="#1e3010"/>
-      <polygon points="90,700 150,440 210,700"  fill="#1a2a0e"/>
-      <polygon points="200,700 260,470 320,700" fill="#1e3010"/>
-      <polygon points="320,700 375,455 430,700" fill="#182808"/>
-      <polygon points="1020,700 1075,455 1130,700" fill="#1e3010"/>
-      <polygon points="1130,700 1190,465 1250,700" fill="#1a2a0e"/>
-      <polygon points="1230,700 1290,450 1350,700" fill="#182808"/>
-      <polygon points="1340,700 1400,460 1460,700" fill="#1e3010"/>
-    </g>
-    <!-- Mid trees -->
-    <g opacity="0.55">
-      <polygon points="-10,760 60,510 130,760"  fill="#253818"/>
-      <polygon points="100,760 175,495 250,760" fill="#2d4520"/>
-      <polygon points="230,760 300,505 370,760" fill="#253818"/>
-      <polygon points="380,760 445,520 510,760" fill="#1e3010"/>
-      <polygon points="930,760 995,515 1060,760" fill="#1e3010"/>
-      <polygon points="1060,760 1130,500 1200,760" fill="#253818"/>
-      <polygon points="1180,760 1255,510 1330,760" fill="#2d4520"/>
-      <polygon points="1320,760 1390,495 1460,760" fill="#253818"/>
-    </g>
-    <!-- Near trees (sides) -->
-    <g opacity="0.85">
-      <polygon points="-30,850 70,555 170,850"  fill="#2d4818"/>
-      <polygon points="70,850 180,540 290,850"  fill="#344f20"/>
-      <polygon points="170,850 270,560 370,850" fill="#283e14"/>
-      <polygon points="1090,850 1190,560 1290,850" fill="#283e14"/>
-      <polygon points="1200,850 1300,540 1400,850" fill="#344f20"/>
-      <polygon points="1310,850 1400,550 1490,850" fill="#2d4818"/>
-    </g>
-    <!-- Ground -->
-    <rect x="0" y="810" width="1440" height="90" fill="#141e08"/>
-    <ellipse cx="720" cy="818" rx="500" ry="25" fill="#1a2a0e" opacity="0.6"/>
-  </svg>
-
-  <!-- Ground mist -->
-  <div id="mist-layer"></div>
-
-  <!-- Ground -->
-  <div id="ground"><div id="path"></div></div>
-
-  <!-- ─── CABIN ─── -->
+  <!-- Cabin SVG -->
   <div id="cabin-wrap">
-    <div id="win-glow"></div>
-
     <!-- Smoke -->
-    <div class="smoke-puff" style="position:absolute;top:1%;left:63%;width:12px;height:12px;--d:2.8s;--dl:0s;--x:6px;"></div>
-    <div class="smoke-puff" style="position:absolute;top:1%;left:63%;width:16px;height:16px;--d:3.8s;--dl:1.1s;--x:-8px;"></div>
-    <div class="smoke-puff" style="position:absolute;top:1%;left:63%;width:10px;height:10px;--d:2.2s;--dl:2s;--x:10px;"></div>
+    <div style="position:absolute; top:-10px; left:62%; width:20px; pointer-events:none;" id="smoke">
+      <div class="smoke-particle"></div>
+      <div class="smoke-particle"></div>
+      <div class="smoke-particle"></div>
+    </div>
 
-    <svg id="cabin-svg" viewBox="0 0 320 250" xmlns="http://www.w3.org/2000/svg" style="width:100%;filter:drop-shadow(0 16px 40px rgba(0,0,0,0.9));">
-      <!-- Chimney -->
-      <rect x="200" y="22" width="26" height="60" fill="#3d2410" rx="2"/>
-      <rect x="197" y="22" width="32" height="9" fill="#2e1a08" rx="1"/>
+    <svg id="cabin-svg" viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; display:block;">
+      <!-- Ground shadow -->
+      <ellipse cx="140" cy="198" rx="110" ry="8" fill="rgba(0,0,0,0.5)"/>
+
+      <!-- Cabin body -->
+      <rect x="30" y="90" width="220" height="110" fill="#1a120a" rx="2"/>
+      <!-- Wood texture lines -->
+      <line x1="30" y1="105" x2="250" y2="105" stroke="#120d07" stroke-width="1.5"/>
+      <line x1="30" y1="120" x2="250" y2="120" stroke="#120d07" stroke-width="1.5"/>
+      <line x1="30" y1="135" x2="250" y2="135" stroke="#120d07" stroke-width="1.5"/>
+      <line x1="30" y1="150" x2="250" y2="150" stroke="#120d07" stroke-width="1.5"/>
+      <line x1="30" y1="165" x2="250" y2="165" stroke="#120d07" stroke-width="1.5"/>
+      <line x1="30" y1="180" x2="250" y2="180" stroke="#120d07" stroke-width="1.5"/>
 
       <!-- Roof -->
-      <polygon points="18,98 160,18 302,98" fill="#2e1608"/>
-      <polygon points="20,100 160,20 300,100" fill="#3d2010"/>
-      <!-- Roof shingles -->
-      <g stroke="#2e1608" stroke-width="1.2" opacity="0.5">
-        <line x1="60" y1="80" x2="105" y2="56"/>
-        <line x1="95" y1="88" x2="140" y2="62"/>
-        <line x1="128" y1="92" x2="175" y2="66"/>
-        <line x1="162" y1="88" x2="210" y2="62"/>
-        <line x1="196" y1="80" x2="242" y2="56"/>
-        <line x1="228" y1="68" x2="272" y2="44"/>
-      </g>
-      <!-- Ridge line -->
-      <line x1="160" y1="20" x2="160" y2="100" stroke="#271208" stroke-width="1" opacity="0.4"/>
+      <polygon points="10,92 140,20 270,92" fill="#0f0a05"/>
+      <polygon points="10,92 140,25 270,92 260,92 140,32 20,92" fill="#1c1208"/>
+      <!-- Chimney -->
+      <rect x="168" y="30" width="22" height="50" fill="#130e08" rx="1"/>
 
-      <!-- Walls -->
-      <rect x="22" y="96" width="276" height="152" fill="#6b4226" rx="2"/>
-
-      <!-- Wood planks -->
-      <g stroke="#5a3520" stroke-width="1.3" opacity="0.55">
-        <line x1="22" y1="116" x2="298" y2="116"/>
-        <line x1="22" y1="136" x2="298" y2="136"/>
-        <line x1="22" y1="156" x2="298" y2="156"/>
-        <line x1="22" y1="176" x2="298" y2="176"/>
-        <line x1="22" y1="196" x2="298" y2="196"/>
-        <line x1="22" y1="216" x2="298" y2="216"/>
-      </g>
-      <!-- Vertical grain -->
-      <g stroke="#5a3520" stroke-width="0.5" opacity="0.2">
-        <line x1="60"  y1="96" x2="60"  y2="248"/>
-        <line x1="100" y1="96" x2="100" y2="248"/>
-        <line x1="220" y1="96" x2="220" y2="248"/>
-        <line x1="260" y1="96" x2="260" y2="248"/>
-      </g>
-
-      <!-- Left window frame -->
-      <rect x="36"  y="115" width="72" height="56" fill="#1e1208" rx="3"/>
-      <rect id="wL" x="38"  y="117" width="68" height="52" rx="2" fill="#1e1208" style="transition:fill 2.5s ease;"/>
-      <line x1="72" y1="117" x2="72" y2="169" stroke="#3a2010" stroke-width="2.5"/>
-      <line x1="38" y1="143" x2="106" y2="143" stroke="#3a2010" stroke-width="2.5"/>
-      <rect x="30"  y="169" width="84" height="6"  fill="#3d2010" rx="1"/>
-
-      <!-- Right window frame -->
-      <rect x="212" y="115" width="72" height="56" fill="#1e1208" rx="3"/>
-      <rect id="wR" x="214" y="117" width="68" height="52" rx="2" fill="#1e1208" style="transition:fill 2.5s ease;"/>
-      <line x1="248" y1="117" x2="248" y2="169" stroke="#3a2010" stroke-width="2.5"/>
-      <line x1="214" y1="143" x2="282" y2="143" stroke="#3a2010" stroke-width="2.5"/>
-      <rect x="206" y="169" width="84" height="6"  fill="#3d2010" rx="1"/>
+      <!-- Window (clickable area for fireplace reveal) -->
+      <rect id="svg-window" x="110" y="100" width="60" height="45" fill="#1a2018" rx="2"/>
+      <!-- Window frame -->
+      <rect x="110" y="100" width="60" height="45" fill="none" stroke="#2a1f14" stroke-width="3" rx="2"/>
+      <line x1="140" y1="100" x2="140" y2="145" stroke="#2a1f14" stroke-width="2"/>
+      <line x1="110" y1="122" x2="170" y2="122" stroke="#2a1f14" stroke-width="2"/>
 
       <!-- Door -->
-      <rect x="128" y="168" width="64" height="80" fill="#3d2010" rx="3"/>
-      <rect x="130" y="170" width="60" height="78" fill="#2e1808" rx="2"/>
-      <circle cx="183" cy="212" r="3.5" fill="#c8a860"/>
-      <rect x="131" y="180" width="8" height="12" fill="#c8a860" rx="1"/>
-      <rect x="131" y="220" width="8" height="12" fill="#c8a860" rx="1"/>
+      <rect x="115" y="155" width="50" height="45" fill="#120d07" rx="1"/>
+      <rect x="115" y="155" width="50" height="45" fill="none" stroke="#2a1f14" stroke-width="2" rx="1"/>
+      <circle cx="158" cy="178" r="3" fill="#3d2e1a"/>
+
+      <!-- Small decoration: heart carving -->
+      <text x="70" y="175" font-size="10" fill="rgba(100,80,60,0.6)" font-family="serif">♥</text>
+      <text x="200" y="160" font-size="8" fill="rgba(100,80,60,0.5)" font-family="serif">∞</text>
 
       <!-- Steps -->
-      <rect x="118" y="240" width="84" height="8"  fill="#4a2c14" rx="1"/>
-      <rect x="124" y="246" width="72" height="5"  fill="#3d2410" rx="1"/>
-
-      <!-- Heart engraving -->
-      <text x="160" y="162" text-anchor="middle" fill="#5a3520" font-size="13" opacity="0.5" font-family="serif">♥</text>
+      <rect x="105" y="195" width="70" height="8" fill="#140f08" rx="1"/>
     </svg>
+
+    <!-- Window glow overlay -->
+    <div id="window-glow"></div>
+    <div id="ground-glow"></div>
+
+    <!-- Fireplace (when both present) -->
+    <div id="fireplace">
+      <div class="flame" style="--fd:0.5s; left:5px; width:20px; height:30px; background:rgba(255,100,30,0.85); bottom:12px;"></div>
+      <div class="flame" style="--fd:0.7s; left:15px; width:15px; height:38px; background:rgba(255,160,30,0.9); animation-delay:0.1s;"></div>
+      <div class="flame" style="--fd:0.4s; left:28px; width:18px; height:25px; background:rgba(255,80,20,0.8); animation-delay:0.3s;"></div>
+      <div class="flame" style="--fd:0.6s; left:20px; width:10px; height:45px; background:rgba(255,220,80,0.7); animation-delay:0.15s;"></div>
+    </div>
   </div>
 
-  <!-- ─── CAMPFIRE ─── -->
-  <div id="fire-glow"></div>
-  <div id="campfire-wrap" onclick="openPanel('panel-memories')" title="Souvenirs">
-    <svg width="75" height="65" viewBox="0 0 75 65" xmlns="http://www.w3.org/2000/svg">
-      <!-- Logs -->
-      <ellipse cx="37" cy="56" rx="28" ry="7" fill="#2e1008"/>
-      <line x1="12" y1="53" x2="60" y2="59" stroke="#1e0c04" stroke-width="5" stroke-linecap="round"/>
-      <line x1="18" y1="59" x2="56" y2="53" stroke="#1e0c04" stroke-width="5" stroke-linecap="round"/>
-      <!-- Coals -->
-      <ellipse cx="37" cy="54" rx="18" ry="4" fill="#b02808" opacity="0.65"/>
-      <!-- Flames -->
-      <path class="flame" style="--d:0.72s;--dl:0s;  --r1:-2deg;--r2:2.5deg;" d="M37,53 Q29,40 33,24 Q37,35 41,24 Q45,40 37,53Z" fill="#e04a10" opacity="0.9"/>
-      <path class="flame" style="--d:0.88s;--dl:0.18s;--r1:-1deg;--r2:2deg;"  d="M37,53 Q31,43 34,30 Q37,39 40,30 Q43,43 37,53Z" fill="#f07820" opacity="0.85"/>
-      <path class="flame" style="--d:0.62s;--dl:0.08s;--r1:-3deg;--r2:1.5deg;" d="M37,53 Q33,45 35,35 Q37,41 39,35 Q41,45 37,53Z" fill="#f5c030" opacity="0.8"/>
-      <!-- Sparks -->
-      <circle cx="27" cy="32" r="1.8" fill="#f5c030" style="animation:twinkle 1.1s ease-in-out infinite alternate; animation-delay:0.3s;"/>
-      <circle cx="45" cy="27" r="1.2" fill="#f5c030" style="animation:twinkle 0.85s ease-in-out infinite alternate; animation-delay:0.6s;"/>
-      <circle cx="31" cy="22" r="1.0" fill="#ffa030" style="animation:twinkle 1.3s ease-in-out infinite alternate; animation-delay:0.1s;"/>
-    </svg>
-    <div class="label">souvenirs</div>
+  <!-- Trees SVG — dense tall forest -->
+  <svg id="trees" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:115%;position:absolute;bottom:0;left:0;">
+
+    <!-- Layer 0 — deepest background, very faint silhouettes -->
+    <g opacity="0.18">
+      <polygon points="50,700 90,100 130,700" fill="#1a3018"/>
+      <polygon points="110,700 155,130 200,700" fill="#183016"/>
+      <polygon points="170,700 210,80 250,700" fill="#1a3018"/>
+      <polygon points="230,700 275,150 320,700" fill="#162e14"/>
+      <polygon points="300,700 340,110 380,700" fill="#1a3018"/>
+      <polygon points="360,700 405,90 450,700" fill="#183016"/>
+      <polygon points="430,700 470,120 510,700" fill="#162e14"/>
+      <polygon points="500,700 545,100 590,700" fill="#1a3018"/>
+      <polygon points="570,700 610,140 650,700" fill="#183016"/>
+      <polygon points="640,700 680,95 720,700" fill="#1a3018"/>
+      <polygon points="710,700 750,115 790,700" fill="#162e14"/>
+      <polygon points="780,700 820,90 860,700" fill="#183016"/>
+      <polygon points="840,700 885,130 930,700" fill="#1a3018"/>
+      <polygon points="910,700 950,105 990,700" fill="#162e14"/>
+      <polygon points="970,700 1015,80 1060,700" fill="#1a3018"/>
+      <polygon points="1040,700 1080,120 1120,700" fill="#183016"/>
+      <polygon points="1100,700 1145,100 1190,700" fill="#1a3018"/>
+      <polygon points="1150,700 1190,140 1230,700" fill="#162e14"/>
+    </g>
+
+    <!-- Layer 1 — far trees -->
+    <g opacity="0.32">
+      <polygon points="0,700 50,160 100,700" fill="#112214"/>
+      <polygon points="60,700 105,120 150,700" fill="#0f2012"/>
+      <polygon points="120,700 165,180 210,700" fill="#112214"/>
+      <polygon points="180,700 230,140 280,700" fill="#0e1e10"/>
+      <polygon points="250,700 295,100 340,700" fill="#112214"/>
+      <polygon points="310,700 360,160 410,700" fill="#0f2012"/>
+      <polygon points="380,700 425,130 470,700" fill="#112214"/>
+      <polygon points="445,700 490,110 535,700" fill="#0e1e10"/>
+      <polygon points="510,700 558,155 606,700" fill="#112214"/>
+      <polygon points="575,700 620,120 665,700" fill="#0f2012"/>
+      <polygon points="640,700 688,90 736,700" fill="#112214"/>
+      <polygon points="710,700 755,145 800,700" fill="#0e1e10"/>
+      <polygon points="775,700 820,115 865,700" fill="#112214"/>
+      <polygon points="840,700 888,170 936,700" fill="#0f2012"/>
+      <polygon points="910,700 955,100 1000,700" fill="#112214"/>
+      <polygon points="970,700 1018,140 1066,700" fill="#0e1e10"/>
+      <polygon points="1040,700 1085,120 1130,700" fill="#112214"/>
+      <polygon points="1100,700 1148,160 1196,700" fill="#0f2012"/>
+      <polygon points="1160,700 1200,110 1240,700" fill="#112214"/>
+    </g>
+
+    <!-- Layer 2 — mid-far trees -->
+    <g opacity="0.52">
+      <polygon points="-20,700 40,80 100,700" fill="#0d1c0b"/>
+      <polygon points="30,700 85,50 140,700" fill="#0b1a09"/>
+      <polygon points="80,700 138,100 196,700" fill="#0d1c0b"/>
+      <polygon points="140,700 198,60 256,700" fill="#0c1b0a"/>
+      <polygon points="200,700 260,85 320,700" fill="#0d1c0b"/>
+      <polygon points="265,700 325,45 385,700" fill="#0b1a09"/>
+      <polygon points="330,700 392,75 454,700" fill="#0d1c0b"/>
+      <polygon points="400,700 460,55 520,700" fill="#0c1b0a"/>
+      <polygon points="468,700 528,90 588,700" fill="#0d1c0b"/>
+      <polygon points="535,700 598,60 661,700" fill="#0b1a09"/>
+      <polygon points="605,700 665,40 725,700" fill="#0d1c0b"/>
+      <polygon points="670,700 733,70 796,700" fill="#0c1b0a"/>
+      <polygon points="740,700 800,55 860,700" fill="#0d1c0b"/>
+      <polygon points="805,700 868,80 931,700" fill="#0b1a09"/>
+      <polygon points="870,700 932,50 994,700" fill="#0d1c0b"/>
+      <polygon points="940,700 1000,65 1060,700" fill="#0c1b0a"/>
+      <polygon points="1005,700 1068,85 1131,700" fill="#0d1c0b"/>
+      <polygon points="1070,700 1130,45 1190,700" fill="#0b1a09"/>
+      <polygon points="1135,700 1195,70 1255,700" fill="#0d1c0b"/>
+    </g>
+
+    <!-- Layer 3 — mid trees, more distinct -->
+    <g opacity="0.72">
+      <polygon points="-30,700 45,30 120,700" fill="#091508"/>
+      <polygon points="20,700 90,55 160,700" fill="#0a1709"/>
+      <polygon points="85,700 158,20 231,700" fill="#091508"/>
+      <polygon points="155,700 225,40 295,700" fill="#081407"/>
+      <polygon points="220,700 295,15 370,700" fill="#091508"/>
+      <polygon points="295,700 368,35 441,700" fill="#0a1709"/>
+      <polygon points="365,700 440,50 515,700" fill="#091508"/>
+      <polygon points="440,700 515,25 590,700" fill="#081407"/>
+      <!-- gap for cabin center area — trees thin out here -->
+      <polygon points="515,700 575,60 635,700" fill="#091508"/>
+      <polygon points="590,700 650,40 710,700" fill="#0a1709"/>
+      <!-- right side -->
+      <polygon points="665,700 728,55 791,700" fill="#091508"/>
+      <polygon points="738,700 802,20 866,700" fill="#081407"/>
+      <polygon points="810,700 875,35 940,700" fill="#091508"/>
+      <polygon points="882,700 948,50 1014,700" fill="#0a1709"/>
+      <polygon points="955,700 1020,25 1085,700" fill="#091508"/>
+      <polygon points="1025,700 1090,40 1155,700" fill="#081407"/>
+      <polygon points="1095,700 1162,30 1229,700" fill="#091508"/>
+      <polygon points="1160,700 1225,55 1290,700" fill="#0a1709"/>
+    </g>
+
+    <!-- Layer 4 — foreground trees, tall and dark, flanking cabin -->
+    <!-- Left cluster -->
+    <polygon points="-50,700 50,0 150,700" fill="#060e07"/>
+    <polygon points="-10,700 75,20 160,700" fill="#07100a"/>
+    <polygon points="40,700 120,-10 200,700" fill="#060e07"/>
+    <polygon points="90,700 165,10 240,700" fill="#081208"/>
+    <polygon points="140,700 215,30 290,700" fill="#060e07"/>
+    <polygon points="185,700 260,-5 335,700" fill="#071009"/>
+    <polygon points="235,700 310,15 385,700" fill="#060e07"/>
+    <polygon points="280,700 355,40 430,700" fill="#081208"/>
+    <polygon points="325,700 395,5 465,700" fill="#060e07"/>
+    <polygon points="365,700 438,25 511,700" fill="#071009"/>
+    <!-- Right cluster -->
+    <polygon points="740,700 813,20 886,700" fill="#060e07"/>
+    <polygon points="785,700 858,5 931,700" fill="#081208"/>
+    <polygon points="830,700 905,-5 980,700" fill="#060e07"/>
+    <polygon points="875,700 950,15 1025,700" fill="#071009"/>
+    <polygon points="920,700 995,30 1070,700" fill="#060e07"/>
+    <polygon points="965,700 1040,0 1115,700" fill="#081208"/>
+    <polygon points="1010,700 1085,20 1160,700" fill="#060e07"/>
+    <polygon points="1055,700 1132,-10 1209,700" fill="#071009"/>
+    <polygon points="1100,700 1175,10 1250,700" fill="#060e07"/>
+    <polygon points="1148,700 1220,0 1292,700" fill="#081208"/>
+
+    <!-- Trunk hints on very front trees -->
+    <rect x="-5" y="560" width="18" height="140" fill="#04080a" rx="2"/>
+    <rect x="90" y="580" width="14" height="120" fill="#04080a" rx="2"/>
+    <rect x="185" y="570" width="16" height="130" fill="#04080a" rx="2"/>
+    <rect x="280" y="575" width="15" height="125" fill="#04080a" rx="2"/>
+    <rect x="375" y="565" width="17" height="135" fill="#04080a" rx="2"/>
+    <rect x="815" y="570" width="15" height="130" fill="#04080a" rx="2"/>
+    <rect x="910" y="580" width="14" height="120" fill="#04080a" rx="2"/>
+    <rect x="1005" y="565" width="16" height="135" fill="#04080a" rx="2"/>
+    <rect x="1100" y="575" width="15" height="125" fill="#04080a" rx="2"/>
+    <rect x="1190" y="560" width="18" height="140" fill="#04080a" rx="2"/>
+
+    <!-- Dense underbrush / ground cover -->
+    <ellipse cx="0" cy="700" rx="120" ry="35" fill="#050d06"/>
+    <ellipse cx="100" cy="702" rx="100" ry="28" fill="#060f07"/>
+    <ellipse cx="210" cy="700" rx="110" ry="32" fill="#050d06"/>
+    <ellipse cx="320" cy="702" rx="95" ry="26" fill="#060f07"/>
+    <ellipse cx="415" cy="700" rx="100" ry="30" fill="#050d06"/>
+    <ellipse cx="510" cy="702" rx="80" ry="22" fill="#060f07"/>
+    <!-- gap around cabin center -->
+    <ellipse cx="690" cy="702" rx="80" ry="22" fill="#060f07"/>
+    <ellipse cx="790" cy="700" rx="100" ry="30" fill="#050d06"/>
+    <ellipse cx="890" cy="702" rx="95" ry="26" fill="#060f07"/>
+    <ellipse cx="990" cy="700" rx="110" ry="32" fill="#050d06"/>
+    <ellipse cx="1100" cy="702" rx="100" ry="28" fill="#060f07"/>
+    <ellipse cx="1200" cy="700" rx="120" ry="35" fill="#050d06"/>
+  </svg>
+
+  <!-- Fireflies container -->
+  <div id="fireflies"></div>
+
+  <!-- Ground -->
+  <div id="ground"></div>
+
+  <!-- Mailbox -->
+  <div id="mailbox" onclick="openModal('notes')">
+    📮
+    <div id="mailbox-count">0</div>
   </div>
 
-  <!-- ─── MAILBOX ─── -->
-  <div id="mailbox-wrap" onclick="openPanel('panel-mailbox')" title="Notes">
-    <svg width="58" height="78" viewBox="0 0 58 78" xmlns="http://www.w3.org/2000/svg">
-      <!-- Post -->
-      <rect x="25" y="40" width="8" height="38" fill="#3d2010" rx="1"/>
-      <!-- Body -->
-      <rect x="6" y="10" width="46" height="32" fill="#6b4226" rx="4"/>
-      <ellipse cx="29" cy="10" rx="23" ry="9" fill="#7a5030"/>
-      <!-- Slot -->
-      <rect x="9" y="34" width="40" height="4" fill="#1e1208" rx="1"/>
-      <!-- Flag -->
-      <rect x="46" y="13" width="3" height="22" fill="#3d2010" rx="1" id="mbox-post"/>
-      <rect id="mbox-flag" x="46" y="13" width="14" height="9" fill="#8a2010" rx="1" style="transform-origin:46px 13px; transition:transform 0.5s ease;"/>
-      <!-- Rivets -->
-      <circle cx="13" cy="22" r="2.5" fill="#c8a860"/>
-      <circle cx="45" cy="22" r="2.5" fill="#c8a860"/>
-    </svg>
-    <div class="label">messages</div>
-  </div>
+  <!-- Engravings hint -->
+  <div id="engravings" onclick="openModal('engravings')">✦ gravures</div>
 
-  <!-- ─── TREE NOTES ─── -->
-  <div class="tree-note" style="top:16%;left:7%;--sw:4.5s;--ra:-4deg;--rb:3deg;" onclick="showNote('Tu me manques, même quand tout va bien.')">
-    <svg width="38" height="50" viewBox="0 0 38 50"><line x1="19" y1="0" x2="19" y2="10" stroke="#6a4828" stroke-width="1.5"/><rect x="2" y="10" width="34" height="40" fill="#f0e8cc" rx="2" stroke="rgba(0,0,0,0.08)" stroke-width="0.5"/><line x1="8" y1="22" x2="30" y2="22" stroke="rgba(0,0,0,0.1)" stroke-width="1"/><line x1="8" y1="29" x2="30" y2="29" stroke="rgba(0,0,0,0.1)" stroke-width="1"/><line x1="8" y1="36" x2="24" y2="36" stroke="rgba(0,0,0,0.1)" stroke-width="1"/></svg>
-  </div>
-
-  <div class="tree-note" style="top:22%;right:8%;--sw:3.8s;--ra:-3deg;--rb:4deg;" onclick="showNote('Regarde la lune ce soir. Je la regarde aussi.')">
-    <svg width="38" height="50" viewBox="0 0 38 50"><line x1="19" y1="0" x2="19" y2="10" stroke="#6a4828" stroke-width="1.5"/><rect x="2" y="10" width="34" height="40" fill="#eee8cc" rx="2" stroke="rgba(0,0,0,0.08)" stroke-width="0.5"/><line x1="8" y1="22" x2="30" y2="22" stroke="rgba(0,0,0,0.1)" stroke-width="1"/><line x1="8" y1="29" x2="28" y2="29" stroke="rgba(0,0,0,0.1)" stroke-width="1"/><line x1="8" y1="36" x2="20" y2="36" stroke="rgba(0,0,0,0.1)" stroke-width="1"/></svg>
-  </div>
-
-  <div class="tree-note" style="top:38%;left:11%;--sw:5.2s;--ra:-2deg;--rb:5deg;" onclick="showNote('J\'espère que ta journée s\'est bien passée.')">
-    <svg width="38" height="50" viewBox="0 0 38 50"><line x1="19" y1="0" x2="19" y2="10" stroke="#6a4828" stroke-width="1.5"/><rect x="2" y="10" width="34" height="40" fill="#f5edd0" rx="2" stroke="rgba(0,0,0,0.08)" stroke-width="0.5"/><line x1="8" y1="22" x2="30" y2="22" stroke="rgba(0,0,0,0.1)" stroke-width="1"/><line x1="8" y1="29" x2="26" y2="29" stroke="rgba(0,0,0,0.1)" stroke-width="1"/></svg>
-  </div>
-
-  <div class="tree-note" style="top:30%;right:12%;--sw:4.0s;--ra:-5deg;--rb:2deg;" onclick="showNote('Prends soin de toi. Je pense à toi.')">
-    <svg width="38" height="50" viewBox="0 0 38 50"><line x1="19" y1="0" x2="19" y2="10" stroke="#6a4828" stroke-width="1.5"/><rect x="2" y="10" width="34" height="40" fill="#ede5c8" rx="2" stroke="rgba(0,0,0,0.08)" stroke-width="0.5"/><line x1="8" y1="22" x2="30" y2="22" stroke="rgba(0,0,0,0.1)" stroke-width="1"/><line x1="8" y1="29" x2="25" y2="29" stroke="rgba(0,0,0,0.1)" stroke-width="1"/><line x1="8" y1="36" x2="28" y2="36" stroke="rgba(0,0,0,0.1)" stroke-width="1"/></svg>
-  </div>
-
-</div><!-- /scene -->
-
-<!-- Bottom nav -->
-<div id="nav">
-  <button class="nav-btn" onclick="openPanel('panel-presence')">🕯️ Lumière</button>
-  <button class="nav-btn" onclick="openPanel('panel-weather')">🌿 Météo</button>
-  <button class="nav-btn" onclick="openPanel('panel-mailbox')">📬 Notes</button>
-  <button class="nav-btn" onclick="openPanel('panel-memories')">🔥 Souvenirs</button>
-  <button class="nav-btn" onclick="openPanel('panel-journal')">📓 Carnet</button>
-  <button class="nav-btn" onclick="openPanel('panel-engrave')">🌲 Graver</button>
+  <!-- Fire hint -->
+  <div id="fire-hint">cliquer sur le feu de camp pour un souvenir</div>
 </div>
 
-<!-- Overlay -->
-<div id="overlay" onclick="closeAll()"></div>
-
-<!-- Note popup -->
-<div id="note-popup" onclick="closeAll()">
-  <span id="note-text"></span>
-  <span class="note-close-hint">— cliquer pour refermer —</span>
-</div>
-
-<!-- ═══ PANELS ══════════════════════════════════════ -->
-
-<!-- PANEL: PRESENCE -->
-<div id="panel-presence" class="panel">
-  <button class="panel-close" onclick="closeAll()">✕</button>
-  <h2>La fenêtre lumineuse</h2>
-  <p class="subtitle">La lumière indique qui est dans la cabane ce soir.</p>
-  <div class="presence-row">
-    <div class="dot" id="dot-me"></div>
-    <span id="pres-me-label">Moi — éteint</span>
-    <span id="pres-me-weather" style="margin-left:auto;font-size:1.4rem;"></span>
+<!-- UI -->
+<div id="ui">
+  <div id="header">
+    <div id="title">Notre Cabane</div>
+    <div id="status-msg"><span id="presence-dot"></span><span id="status-text">personne n'est là pour l'instant…</span></div>
   </div>
-  <div class="presence-row">
-    <div class="dot" id="dot-partner"></div>
-    <span id="pres-partner-label">Mon amour — éteint</span>
-    <span id="pres-partner-weather" style="margin-left:auto;font-size:1.4rem;"></span>
+</div>
+
+<!-- Who am I -->
+<div id="who-am-i">
+  <button class="who-btn" id="btn-moi" onclick="setUser('moi')">Moi</button>
+  <button class="who-btn" id="btn-compagnon" onclick="setUser('compagnon')">Mon amour</button>
+</div>
+
+<!-- Sound toggle -->
+<div class="icon-btn" id="sound-btn" onclick="toggleSound()" title="sons">
+  🎧
+  <span class="tooltip">sons</span>
+</div>
+
+<!-- Left panel -->
+<div class="panel" id="panel-left">
+  <div class="icon-btn" onclick="openModal('meteo')" id="btn-meteo">
+    🌿
+    <span class="tooltip">ma météo du jour</span>
   </div>
-  <div style="background:rgba(0,0,0,0.04);border-radius:6px;padding:12px;margin:12px 0;font-style:italic;font-size:0.98rem;color:rgba(28,18,8,0.6);" id="pres-msg">
-    Personne n'est là. La forêt est calme.
+  <div class="icon-btn" onclick="openModal('carnet')">
+    📖
+    <span class="tooltip">carnet de la cabane</span>
   </div>
-  <div style="display:flex;gap:8px;">
-    <button class="btn" onclick="setPresence('me')" style="flex:1">J'allume ma bougie 🕯️</button>
-    <button class="btn" onclick="setPresence('partner')" style="flex:1;background:#5c3a8a;">Mon amour est là 💜</button>
+</div>
+
+<!-- Right panel -->
+<div class="panel" id="panel-right">
+  <div class="icon-btn" onclick="openModal('notes')">
+    🍂
+    <span class="tooltip">notes dans la forêt</span>
   </div>
-  <button class="btn secondary" onclick="clearPresence()">Éteindre toutes les lumières</button>
-</div>
-
-<!-- PANEL: WEATHER -->
-<div id="panel-weather" class="panel">
-  <button class="panel-close" onclick="closeAll()">✕</button>
-  <h2>Météo du cœur</h2>
-  <p class="subtitle">La forêt prend la couleur de ton humeur.</p>
-  <div class="weather-grid">
-    <button class="w-btn" id="wb-rain"      onclick="setWeather('rain')">      <em>🌧️</em>Journée difficile</button>
-    <button class="w-btn" id="wb-sun"       onclick="setWeather('sun')">       <em>☀️</em>Heureux·se</button>
-    <button class="w-btn" id="wb-snow"      onclick="setWeather('snow')">      <em>❄️</em>Besoin de calme</button>
-    <button class="w-btn" id="wb-fireflies" onclick="setWeather('fireflies')"> <em>✨</em>Amoureux·se</button>
+  <div class="icon-btn" onclick="openModal('souvenirs')">
+    🔥
+    <span class="tooltip">nos souvenirs</span>
   </div>
-  <div id="weather-msg" class="dim" style="text-align:center;padding:6px 0;"></div>
-  <button class="btn secondary" onclick="setWeather('none')">Effacer la météo</button>
 </div>
 
-<!-- PANEL: MAILBOX -->
-<div id="panel-mailbox" class="panel">
-  <button class="panel-close" onclick="closeAll()">✕</button>
-  <h2>La boîte aux lettres</h2>
-  <p class="subtitle">Des mots glissés, comme des papiers pliés en quatre.</p>
-  <div class="entry-list" id="mailbox-list"></div>
-  <hr class="divider">
-  <textarea class="cabin-input" id="mailbox-input" placeholder="Glisser un mot dans la boîte..." maxlength="220" rows="3"></textarea>
-  <button class="btn" onclick="addMail()">Déposer le mot ✉️</button>
+<!-- Bottom panel -->
+<div class="panel" id="panel-bottom">
+  <!-- nothing here for now, mailbox and engravings are in scene -->
 </div>
 
-<!-- PANEL: MEMORIES / CAMPFIRE -->
-<div id="panel-memories" class="panel">
-  <button class="panel-close" onclick="closeAll()">✕</button>
-  <h2>Le feu des souvenirs</h2>
-  <p class="subtitle">Cliquer sur le feu pour faire surgir un souvenir.</p>
-  <div id="memory-card">
-    <div class="mem-emoji" id="mem-emoji">🍂</div>
-    <div class="mem-text"  id="mem-text">Cliquer pour faire surgir un souvenir...</div>
+<!-- ======= MODALS ======= -->
+
+<!-- Météo -->
+<div class="modal-overlay" id="modal-meteo">
+  <div class="modal">
+    <div class="modal-title">Ma météo du jour</div>
+    <button class="modal-close" onclick="closeModal('meteo')">✕</button>
+    <p style="font-size:0.9rem; color:var(--muted); margin-bottom:1rem; font-style:italic;">Comment tu te sens aujourd'hui ? La forêt s'adaptera.</p>
+    <div class="meteo-grid">
+      <div class="meteo-option" onclick="setMeteo('pluie',this)">
+        <span class="meteo-icon">🌧</span>
+        <div class="meteo-label">Pluie</div>
+        <div class="meteo-desc">journée difficile</div>
+      </div>
+      <div class="meteo-option" onclick="setMeteo('soleil',this)">
+        <span class="meteo-icon">☀️</span>
+        <div class="meteo-label">Soleil</div>
+        <div class="meteo-desc">je suis heureux·se</div>
+      </div>
+      <div class="meteo-option" onclick="setMeteo('neige',this)">
+        <span class="meteo-icon">❄️</span>
+        <div class="meteo-label">Neige</div>
+        <div class="meteo-desc">besoin de calme</div>
+      </div>
+      <div class="meteo-option" onclick="setMeteo('lucioles',this)">
+        <span class="meteo-icon">✨</span>
+        <div class="meteo-label">Lucioles</div>
+        <div class="meteo-desc">amoureux·se</div>
+      </div>
+    </div>
+    <p style="font-size:0.85rem; color:var(--muted); font-style:italic;" id="partner-meteo-status"></p>
   </div>
-  <button class="btn" onclick="drawMemory()">✨ Souvenir aléatoire</button>
-  <hr class="divider">
-  <p class="dim" style="margin-bottom:8px;">Ajouter un souvenir ou un rêve :</p>
-  <textarea class="cabin-input" id="memory-input" placeholder="Une chanson, une date, un rêve..." rows="2" maxlength="200"></textarea>
-  <button class="btn" onclick="addMemory()">Jeter dans le feu 🔥</button>
 </div>
 
-<!-- PANEL: JOURNAL -->
-<div id="panel-journal" class="panel">
-  <button class="panel-close" onclick="closeAll()">✕</button>
-  <h2>Le carnet de la cabane</h2>
-  <p class="subtitle">Une phrase par jour. Une capsule de votre relation.</p>
-  <div class="entry-list" id="journal-list"></div>
-  <hr class="divider">
-  <textarea class="cabin-input" id="journal-input" placeholder="Une pensée, un rêve, une gratitude..." maxlength="200" rows="3"></textarea>
-  <button class="btn" onclick="addJournal()">Écrire dans le carnet 🖊️</button>
+<!-- Notes dans la forêt -->
+<div class="modal-overlay" id="modal-notes">
+  <div class="modal">
+    <div class="modal-title">📮 Notes dans la forêt</div>
+    <button class="modal-close" onclick="closeModal('notes')">✕</button>
+    <p style="font-size:0.85rem; color:var(--muted); font-style:italic; margin-bottom:1rem;">Des mots suspendus aux arbres, glissés dans la boîte…</p>
+
+    <div id="notes-list"></div>
+
+    <div style="border-top:1px solid rgba(180,160,120,0.1); padding-top:1rem; margin-top:0.5rem;">
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.6rem;">Laisser un mot :</p>
+      <textarea id="note-input" placeholder="Je pense à toi ce soir…" style="height:70px;"></textarea>
+      <button class="btn" onclick="addNote()">Accrocher au vent</button>
+    </div>
+  </div>
 </div>
 
-<!-- PANEL: ENGRAVE -->
-<div id="panel-engrave" class="panel">
-  <button class="panel-close" onclick="closeAll()">✕</button>
-  <h2>Graver dans le bois</h2>
-  <p class="subtitle">Des mots pour toujours sur les murs de la cabane.</p>
-  <div class="entry-list" id="engrave-list"></div>
-  <hr class="divider">
-  <textarea class="cabin-input" id="engrave-input" placeholder="Graver quelque chose..." maxlength="80" rows="2"></textarea>
-  <button class="btn" onclick="addEngrave()">Graver ✦</button>
+<!-- Gravures -->
+<div class="modal-overlay" id="modal-engravings">
+  <div class="modal">
+    <div class="modal-title">✦ Gravures sur la cabane</div>
+    <button class="modal-close" onclick="closeModal('engravings')">✕</button>
+    <p style="font-size:0.85rem; color:var(--muted); font-style:italic; margin-bottom:1rem;">Ce qu'on a taillé dans le bois pour ne jamais oublier.</p>
+    <div id="engravings-list"></div>
+    <div style="border-top:1px solid rgba(180,160,120,0.1); padding-top:1rem; margin-top:0.5rem;">
+      <textarea id="engraving-input" placeholder="Un jour on construira cette vraie cabane." style="height:60px;"></textarea>
+      <button class="btn" onclick="addEngraving()">Graver dans le bois</button>
+    </div>
+  </div>
 </div>
 
-<!-- ═══ AUDIO ════════════════════════════════════════ -->
-<audio id="audio-forest" loop>
-  <source src="https://actions.google.com/sounds/v1/ambiences/forest_with_birds.ogg" type="audio/ogg">
-</audio>
-<audio id="audio-rain" loop>
-  <source src="https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg" type="audio/ogg">
-</audio>
+<!-- Souvenirs (feu de camp) -->
+<div class="modal-overlay" id="modal-souvenirs">
+  <div class="modal">
+    <div class="modal-title">🔥 Autour du feu</div>
+    <button class="modal-close" onclick="closeModal('souvenirs')">✕</button>
+    <p style="font-size:0.85rem; color:var(--muted); font-style:italic; margin-bottom:1rem;">Nos souvenirs, nos rêves, nos chansons.</p>
+    <button class="btn" onclick="showRandomMemory()" style="margin-bottom:1rem;">Souvenir aléatoire ✦</button>
+    <div id="souvenirs-list"></div>
+    <div class="memory-form">
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.6rem;">Ajouter un souvenir :</p>
+      <select id="memory-type">
+        <option value="souvenir">🌿 Souvenir</option>
+        <option value="chanson">🎵 Chanson</option>
+        <option value="rêve">✨ Rêve futur</option>
+        <option value="date">📅 Date importante</option>
+        <option value="pensée">💭 Pensée</option>
+      </select>
+      <textarea id="memory-input" placeholder="Le jour où on a vu tomber la pluie ensemble…" style="height:70px;"></textarea>
+      <button class="btn" onclick="addMemory()">Jeter au feu</button>
+    </div>
+  </div>
+</div>
 
-<!-- ═══ SCRIPT ═══════════════════════════════════════ -->
+<!-- Carnet -->
+<div class="modal-overlay" id="modal-carnet">
+  <div class="modal">
+    <div class="modal-title">📖 Carnet de la cabane</div>
+    <button class="modal-close" onclick="closeModal('carnet')">✕</button>
+    <p style="font-size:0.85rem; color:var(--muted); font-style:italic; margin-bottom:1rem;">Une phrase par jour. Une pensée. Un rêve.</p>
+    <div id="carnet-list"></div>
+    <div style="border-top:1px solid rgba(180,160,120,0.1); padding-top:1rem; margin-top:0.5rem;">
+      <textarea id="carnet-input" placeholder="Ce soir la lune était pleine…" style="height:60px;"></textarea>
+      <button class="btn" onclick="addCarnet()">Écrire</button>
+    </div>
+  </div>
+</div>
+
+<!-- Random memory flash -->
+<div id="memory-flash"></div>
+
 <script>
-/* ── STORAGE ───────────────────────────────────── */
-const LS = key => { try { return JSON.parse(localStorage.getItem(key)); } catch{ return null; } };
-const SS = (key,val) => localStorage.setItem(key, JSON.stringify(val));
+// ===== STATE =====
+let currentUser = null;
+let soundOn = false;
+let currentMeteo = 'calme';
+let partnerMeteo = null;
+const STORAGE_KEY = 'cabane_v1';
 
-/* ── STATE ─────────────────────────────────────── */
-const S = {
-  weather:  LS('cab-weather')  || 'none',
-  presence: LS('cab-presence') || { me:false, partner:false },
-  mailbox:  LS('cab-mailbox')  || [],
-  journal:  LS('cab-journal')  || [{ date:'Un jour...', text:'Un jour on construira cette vraie cabane.' }],
-  memories: LS('cab-memories') || [],
-  engrave:  LS('cab-engrave')  || ['"Tu me manques." — ♥', '"Bientôt." — ♥', '"Notre cabane t\'attend." — ♥'],
-  ambientOn: false,
-  currentAudio: null,
-};
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch(e) { return {}; }
+}
+function saveData(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+function getData(key, def) {
+  const d = loadData();
+  return d[key] !== undefined ? d[key] : def;
+}
+function setData(key, val) {
+  const d = loadData();
+  d[key] = val;
+  saveData(d);
+}
 
-const DEFAULT_MEMORIES = [
-  { emoji:'🍂', text:'"Le jour où on a ri sous la pluie jusqu\'aux larmes."' },
-  { emoji:'🌙', text:'"Cette nuit à regarder les étoiles sans rien dire."' },
-  { emoji:'☕', text:'"Nos matins lents avec du thé et un livre."' },
-  { emoji:'🎵', text:'"Cette chanson qui nous appartient maintenant."' },
-  { emoji:'🏔️', text:'"Un jour : une vraie cabane dans les bois."' },
-  { emoji:'🌹', text:'"La première fois que tu m\'as dit que tu m\'aimais."' },
-  { emoji:'🌿', text:'"Tous les petits moments ordinaires devenus extraordinaires."' },
-  { emoji:'⭐', text:'"On a compté des étoiles et perdu le compte."' },
-];
-
-/* ── CURSOR ─────────────────────────────────────── */
-const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', e => {
-  cursor.style.left = e.clientX + 'px';
-  cursor.style.top  = e.clientY + 'px';
-});
-document.querySelectorAll('button, .tree-note, #campfire-wrap, #mailbox-wrap, .panel-close')
-  .forEach(el => {
-    el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
-    el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
-  });
-
-/* ── STARS ──────────────────────────────────────── */
-function buildStars() {
+// ===== STARS =====
+function createStars() {
   const c = document.getElementById('stars');
-  for (let i = 0; i < 90; i++) {
+  for(let i=0;i<80;i++){
     const s = document.createElement('div');
-    s.className = 'star';
-    const sz = Math.random() * 2.2 + 0.4;
-    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--d:${(Math.random()*3+1.5).toFixed(1)}s;--dl:${(Math.random()*4).toFixed(1)}s;`;
+    s.className='star';
+    const size = Math.random()*2+0.5;
+    s.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*70}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*5}s`;
     c.appendChild(s);
   }
 }
 
-/* ── WEATHER ────────────────────────────────────── */
-const WEATHER_CFG = {
-  rain:      { sky:'rain-sky',  moon:true, sun:false, msg:'🌧️ La forêt pleure doucement avec toi.' },
-  sun:       { sky:'sun-sky',   moon:false, sun:true,  msg:'☀️ La lumière filtre entre les feuilles.' },
-  snow:      { sky:'snow-sky',  moon:true, sun:false, msg:'❄️ Un silence doux recouvre tout.' },
-  fireflies: { sky:'love-sky',  moon:true, sun:false, msg:'✨ Les lucioles dansent pour vous.' },
-  none:      { sky:'',          moon:true, sun:false, msg:'' },
-};
-
-let weatherParticles = [];
-
-function clearWeatherFX() {
-  weatherParticles.forEach(e => e.remove());
-  weatherParticles = [];
-  document.querySelectorAll('.firefly').forEach(e => e.remove());
+// ===== FIREFLIES =====
+function createFireflies() {
+  const c = document.getElementById('fireflies');
+  for(let i=0;i<15;i++){
+    const f = document.createElement('div');
+    f.className='firefly';
+    f.style.cssText=`left:${10+Math.random()*80}%;top:${20+Math.random()*60}%;--fly-d:${6+Math.random()*8}s;--fly-delay:${Math.random()*8}s;--x1:${(Math.random()-0.5)*100}px;--y1:${(Math.random()-0.5)*80}px;--x2:${(Math.random()-0.5)*120}px;--y2:${(Math.random()-0.5)*60}px;--x3:${(Math.random()-0.5)*80}px;--y3:${(Math.random()-0.5)*100}px`;
+    c.appendChild(f);
+  }
 }
 
-function applyWeather(type) {
-  clearWeatherFX();
+function setFireflies(on) {
+  document.querySelectorAll('.firefly').forEach(f=>{ f.className = on ? 'firefly active' : 'firefly'; });
+}
+
+// ===== RAIN =====
+function createRain() {
+  const c = document.getElementById('particles');
+  for(let i=0;i<60;i++){
+    const r = document.createElement('div');
+    r.className='raindrop';
+    const h = 10+Math.random()*25;
+    r.style.cssText=`left:${Math.random()*100}%;height:${h}px;animation-duration:${0.6+Math.random()*0.5}s;animation-delay:${Math.random()*2}s`;
+    c.appendChild(r);
+  }
+}
+
+function createSnow() {
+  const c = document.getElementById('particles');
+  for(let i=0;i<50;i++){
+    const s = document.createElement('div');
+    s.className='snowflake';
+    const size = 2+Math.random()*4;
+    s.style.cssText=`left:${Math.random()*100}%;width:${size}px;height:${size}px;animation-duration:${5+Math.random()*8}s,${2+Math.random()*3}s;animation-delay:${Math.random()*8}s,${Math.random()*3}s`;
+    c.appendChild(s);
+  }
+}
+
+function setWeatherParticles(type) {
+  const ps = document.getElementById('particles');
+  ps.innerHTML='';
+  document.getElementById('sun').className='';
+  setFireflies(false);
+
+  if(type==='pluie'){ createRain(); document.querySelectorAll('.raindrop').forEach(r=>r.className='raindrop active'); setSky('storm'); }
+  else if(type==='neige'){ createSnow(); document.querySelectorAll('.snowflake').forEach(s=>s.className='snowflake active'); setSky('snow'); }
+  else if(type==='soleil'){ document.getElementById('sun').className='active'; setSky('day'); }
+  else if(type==='lucioles'){ setFireflies(true); setSky('night'); }
+  else { setSky('night'); }
+}
+
+function setSky(mode) {
   const sky = document.getElementById('sky');
-  sky.className = '';
-  const cfg = WEATHER_CFG[type] || WEATHER_CFG.none;
-  if (cfg.sky) sky.classList.add(cfg.sky);
-  document.getElementById('moon').style.opacity = cfg.moon ? '1' : '0';
-  document.getElementById('sun').style.opacity  = cfg.sun  ? '1' : '0';
-  document.getElementById('weather-msg').textContent = cfg.msg;
+  const map = {
+    storm: 'radial-gradient(ellipse at 50% 0%, #0d1510 0%, #080c08 100%)',
+    snow: 'radial-gradient(ellipse at 50% 0%, #1a1e2a 0%, #0a0c10 100%)',
+    day: 'radial-gradient(ellipse at 70% 10%, #1a2a3a 0%, #0d1520 40%, #0d0f0b 100%)',
+    night: 'radial-gradient(ellipse at 50% 0%, #1a2a1a 0%, #0d0f0b 60%)'
+  };
+  sky.style.background = map[mode] || map.night;
+}
 
-  const layer = document.getElementById('weather-layer');
+// ===== USER / PRESENCE =====
+function setUser(who) {
+  currentUser = who;
+  document.getElementById('btn-moi').classList.toggle('active', who==='moi');
+  document.getElementById('btn-compagnon').classList.toggle('active', who==='compagnon');
+  setData('lastVisitor_'+who, Date.now());
+  updatePresence();
+  updatePartnerMeteo();
+}
 
-  if (type === 'rain') {
-    for (let i = 0; i < 90; i++) {
-      const d = document.createElement('div');
-      d.className = 'raindrop';
-      const h = Math.random()*80+30;
-      d.style.cssText = `left:${Math.random()*100}%;height:${h}px;--d:${(Math.random()*0.6+0.55).toFixed(2)}s;--dl:${(Math.random()*2).toFixed(2)}s;`;
-      layer.appendChild(d);
-      weatherParticles.push(d);
-    }
-    playAudio('rain');
-  } else if (type === 'snow') {
-    const flakes = ['❄','❅','✦','·','*'];
-    for (let i = 0; i < 45; i++) {
-      const d = document.createElement('div');
-      d.className = 'snowflake';
-      d.textContent = flakes[Math.floor(Math.random()*flakes.length)];
-      d.style.cssText = `left:${Math.random()*100}%;font-size:${Math.random()*10+7}px;--d:${(Math.random()*6+6).toFixed(1)}s;--dl:${(Math.random()*6).toFixed(1)}s;`;
-      layer.appendChild(d);
-      weatherParticles.push(d);
-    }
-    playAudio('forest');
-  } else if (type === 'fireflies') {
-    for (let i = 0; i < 22; i++) {
-      const ff = document.createElement('div');
-      ff.className = 'firefly';
-      ff.style.cssText = `
-        left:${Math.random()*80+10}%;top:${Math.random()*60+10}%;
-        --d:${(Math.random()*6+6).toFixed(1)}s;--dl:${(Math.random()*5).toFixed(1)}s;
-        --x1:${rnd(100)}px;--y1:${rnd(60)}px;
-        --x2:${rnd(100)}px;--y2:${rnd(60)}px;
-        --x3:${rnd(100)}px;--y3:${rnd(60)}px;
-      `;
-      document.getElementById('scene').appendChild(ff);
-    }
-    playAudio('forest');
-  } else if (type === 'sun') {
-    playAudio('forest');
+function updatePresence() {
+  const dot = document.getElementById('presence-dot');
+  const txt = document.getElementById('status-text');
+  const win = document.getElementById('window-glow');
+  const glow = document.getElementById('ground-glow');
+  const fire = document.getElementById('fireplace');
+  const smoke = document.getElementById('smoke');
+
+  const moi = getData('lastVisitor_moi',0);
+  const comp = getData('lastVisitor_compagnon',0);
+  const now = Date.now();
+  const threshold = 5*60*1000; // 5 min
+
+  const moiHere = (now - moi) < threshold;
+  const compHere = (now - comp) < threshold;
+  const both = moiHere && compHere;
+  const oneHere = moiHere || compHere;
+
+  if(both){
+    dot.className='presence-dot both';
+    txt.textContent = 'vous êtes tous les deux là ♥';
+    win.className='lit both'; glow.className='lit';
+    fire.className='fireplace active'; smoke.style.opacity='0';
+    document.getElementById('fire-hint').style.opacity='1';
+  } else if(oneHere){
+    dot.className='presence-dot one';
+    const who = moiHere ? (currentUser==='moi'?'tu es là':'ton amour est là') : 'ton amour est là';
+    txt.textContent = (currentUser ? 'je pense à toi 🕯' : who);
+    win.className='lit'; glow.className='lit';
+    fire.className='fireplace'; smoke.style.opacity='1';
+    document.getElementById('fire-hint').style.opacity='0';
   } else {
-    stopAudio();
+    dot.className='presence-dot';
+    txt.textContent = 'personne n\'est là pour l\'instant…';
+    win.className=''; glow.className='';
+    fire.className='fireplace'; smoke.style.opacity='0';
+    document.getElementById('fire-hint').style.opacity='0';
   }
 }
 
-function rnd(n) { return (Math.random()-0.5)*n; }
-
-function setWeather(type) {
-  S.weather = type;
-  SS('cab-weather', type);
-  applyWeather(type);
-  document.querySelectorAll('.w-btn').forEach(b => b.classList.remove('selected'));
-  const btn = document.getElementById('wb-'+type);
-  if (btn) btn.classList.add('selected');
+// ===== METEO =====
+function setMeteo(type, el) {
+  currentMeteo = type;
+  if(currentUser) setData('meteo_'+currentUser, {type, time: Date.now()});
+  document.querySelectorAll('.meteo-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  setWeatherParticles(type);
+  closeModal('meteo');
+  document.getElementById('btn-meteo').textContent = {pluie:'🌧',soleil:'☀️',neige:'❄️',lucioles:'✨'}[type];
+  updatePartnerMeteo();
 }
 
-/* ── AUDIO ──────────────────────────────────────── */
-function playAudio(type) {
-  if (!S.ambientOn) return;
-  stopAudio();
-  const a = document.getElementById(type === 'rain' ? 'audio-rain' : 'audio-forest');
-  a.volume = 0.25;
-  a.play().catch(()=>{});
-  S.currentAudio = a;
-}
-function stopAudio() {
-  ['audio-forest','audio-rain'].forEach(id => {
-    const a = document.getElementById(id);
-    a.pause(); a.currentTime = 0;
-  });
-  S.currentAudio = null;
-}
-function toggleAmbient() {
-  S.ambientOn = !S.ambientOn;
-  const btn = document.getElementById('ambient-btn');
-  if (S.ambientOn) {
-    btn.textContent = '🔊 Ambiance';
-    if (S.weather !== 'none') applyWeather(S.weather);
-    else playAudio('forest');
-  } else {
-    btn.textContent = '🎵 Ambiance';
-    stopAudio();
-  }
+function updatePartnerMeteo() {
+  const partner = currentUser==='moi' ? 'compagnon' : 'moi';
+  const m = getData('meteo_'+partner, null);
+  const el = document.getElementById('partner-meteo-status');
+  if(!el) return;
+  if(m){
+    const age = Math.round((Date.now()-m.time)/60000);
+    const labels = {pluie:'journée difficile',soleil:'heureux·se',neige:'besoin de calme',lucioles:'amoureux·se'};
+    const icons = {pluie:'🌧',soleil:'☀️',neige:'❄️',lucioles:'✨'};
+    el.textContent = age < 180 ? `L'autre est ${icons[m.type]} — ${labels[m.type]} (il y a ${age < 2 ? 'quelques instants' : age+'min'})` : '';
+  } else { el.textContent = ''; }
 }
 
-/* ── PRESENCE ───────────────────────────────────── */
-const WEATHER_EMOJI = { rain:'🌧️', sun:'☀️', snow:'❄️', fireflies:'✨', none:'' };
-
-function setPresence(who) {
-  S.presence[who] = true;
-  SS('cab-presence', S.presence);
-  renderPresence();
-}
-function clearPresence() {
-  S.presence = { me:false, partner:false };
-  SS('cab-presence', S.presence);
-  renderPresence();
-}
-function renderPresence() {
-  const { me, partner } = S.presence;
-  const wL = document.getElementById('wL');
-  const wR = document.getElementById('wR');
-  const glow = document.getElementById('win-glow');
-  const fireGlow = document.getElementById('fire-glow');
-  const pill = document.getElementById('status-pill');
-  const dotMe = document.getElementById('dot-me');
-  const dotPt = document.getElementById('dot-partner');
-  const lblMe = document.getElementById('pres-me-label');
-  const lblPt = document.getElementById('pres-partner-label');
-  const msg   = document.getElementById('pres-msg');
-  const we    = WEATHER_EMOJI[S.weather] || '';
-
-  dotMe.className = me ? 'dot on' : 'dot off';
-  dotPt.className = partner ? 'dot on' : 'dot off';
-  lblMe.textContent = me ? 'Moi — présent·e' : 'Moi — absent·e';
-  lblPt.textContent = partner ? 'Mon amour — présent·e' : 'Mon amour — absent·e';
-  document.getElementById('pres-me-weather').textContent = me ? we : '';
-
-  if (me && partner) {
-    wL.style.fill = '#e8920a'; wR.style.fill = '#e8920a';
-    glow.className = 'both';
-    fireGlow.classList.add('active');
-    pill.textContent = '🔥 Vous êtes tous les deux là.';
-    msg.textContent = 'Le feu crépite dans la cheminée. Vous êtes ensemble ce soir. 🔥';
-  } else if (me || partner) {
-    wL.style.fill = '#f5c030'; wR.style.fill = '#1e1208';
-    glow.className = 'lit';
-    fireGlow.classList.remove('active');
-    pill.textContent = me ? '🕯️ Tu es là — la lumière brille.' : '💜 Ton amour pense à toi.';
-    msg.textContent = me ? 'Ta bougie est allumée. Tu attends dans la cabane...' : 'Ton amour a allumé la lumière pour toi. 💜';
-  } else {
-    wL.style.fill = '#1e1208'; wR.style.fill = '#1e1208';
-    glow.className = '';
-    fireGlow.classList.remove('active');
-    pill.textContent = '🌙 La cabane attend...';
-    msg.textContent = 'Personne n\'est là. La forêt est calme.';
-  }
+// ===== NOTES =====
+function renderNotes() {
+  const notes = getData('notes',[]);
+  const el = document.getElementById('notes-list');
+  if(!el) return;
+  if(!notes.length){ el.innerHTML='<p style="font-style:italic;color:var(--muted);font-size:0.9rem;">Aucun mot pour l\'instant. La forêt attend.</p>'; return; }
+  el.innerHTML = notes.slice().reverse().map(n=>`
+    <div class="tree-note">
+      "${n.text}"
+      <div class="note-from">${n.from} · ${formatDate(n.time)}</div>
+    </div>
+  `).join('');
+  const mc = document.getElementById('mailbox-count');
+  const unread = notes.filter(n=>!n.read).length;
+  mc.style.display = unread ? 'flex' : 'none';
+  mc.textContent = unread;
+  document.getElementById('mailbox').classList.toggle('has-mail', unread>0);
 }
 
-/* ── PANELS ─────────────────────────────────────── */
-let activePanel = null;
-function openPanel(id) {
-  closeAll();
-  const p = document.getElementById(id);
-  if (!p) return;
-  p.classList.add('open');
-  document.getElementById('overlay').classList.add('open');
-  activePanel = id;
-  refreshPanel(id);
-}
-function closeAll() {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-  document.getElementById('overlay').classList.remove('open');
-  document.getElementById('note-popup').style.display = 'none';
-  activePanel = null;
-}
-function refreshPanel(id) {
-  if (id === 'panel-journal')  renderList('journal-list',  S.journal,  true);
-  if (id === 'panel-mailbox')  renderMailbox();
-  if (id === 'panel-engrave')  renderEngrave();
-  if (id === 'panel-weather')  {
-    document.querySelectorAll('.w-btn').forEach(b => b.classList.remove('selected'));
-    const b = document.getElementById('wb-'+S.weather);
-    if (b) b.classList.add('selected');
-  }
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
-
-/* ── RENDER HELPERS ─────────────────────────────── */
-function renderList(containerId, data, showDate) {
-  const c = document.getElementById(containerId);
-  if (!c) return;
-  const items = [...data].reverse().slice(0, 12);
-  c.innerHTML = items.length
-    ? items.map(e => `<div class="entry">${showDate && e.date ? `<div class="meta">${e.date}</div>` : ''}"${e.text}"</div>`).join('')
-    : '<div class="dim" style="padding:8px 0">Rien encore...</div>';
+function addNote() {
+  const inp = document.getElementById('note-input');
+  const t = inp.value.trim();
+  if(!t) return;
+  const notes = getData('notes',[]);
+  notes.push({ text:t, from: currentUser==='compagnon'?'Mon amour':'Moi', time:Date.now(), read:false });
+  setData('notes', notes);
+  inp.value='';
+  renderNotes();
 }
 
-function renderMailbox() {
-  const c = document.getElementById('mailbox-list');
-  const defaults = [
-    { date:'Mot glissé sous la porte', text:'J\'ai pensé à toi en voyant les étoiles.' },
-    { date:'Note suspendue au chêne',  text:'Garde le sourire, ma lumière.' },
-  ];
-  const all = [...defaults, ...S.mailbox];
-  c.innerHTML = [...all].reverse().slice(0,8).map(e =>
-    `<div class="entry"><div class="meta">${e.date || ''}</div>"${e.text}"</div>`
-  ).join('') || '<div class="dim">Aucun message pour l\'instant...</div>';
+// ===== ENGRAVINGS =====
+const defaultEngravings = [
+  { text: 'Un jour on construira cette vraie cabane.', from:'Nous deux', time: Date.now()-86400000*30 },
+  { text: 'Tu es ma forêt et mon horizon.', from:'Moi', time: Date.now()-86400000*15 },
+  { text: 'Regarde la lune ce soir — elle pense à toi aussi.', from:'Mon amour', time: Date.now()-86400000*7 },
+];
+
+function renderEngravings() {
+  const engravings = getData('engravings', defaultEngravings);
+  const el = document.getElementById('engravings-list');
+  if(!el) return;
+  el.innerHTML = engravings.map(e=>`
+    <div style="border-left:2px solid rgba(180,160,120,0.15); padding:0.5rem 0.8rem; margin-bottom:0.7rem;">
+      <div style="font-style:italic;color:var(--cream);font-size:1rem;">"${e.text}"</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:0.3rem;">${e.from} · ${formatDate(e.time)}</div>
+    </div>
+  `).join('');
 }
 
-function renderEngrave() {
-  const c = document.getElementById('engrave-list');
-  c.innerHTML = S.engrave.map(t =>
-    `<div class="entry" style="font-style:italic;font-family:'Playfair Display',serif;">${t}</div>`
-  ).join('');
+function addEngraving() {
+  const inp = document.getElementById('engraving-input');
+  const t = inp.value.trim();
+  if(!t) return;
+  const engravings = getData('engravings', defaultEngravings);
+  engravings.push({ text:t, from:currentUser==='compagnon'?'Mon amour':'Moi', time:Date.now() });
+  setData('engravings', engravings);
+  inp.value='';
+  renderEngravings();
 }
 
-/* ── ACTIONS ────────────────────────────────────── */
-function addMail() {
-  const v = document.getElementById('mailbox-input').value.trim();
-  if (!v) return;
-  const now = new Date();
-  S.mailbox.push({ date: now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}), text: v });
-  SS('cab-mailbox', S.mailbox);
-  document.getElementById('mailbox-input').value = '';
-  renderMailbox();
-  // raise flag
-  document.getElementById('mbox-flag').style.transform = 'rotate(-50deg)';
-}
+// ===== SOUVENIRS =====
+const defaultMemories = [
+  { type:'souvenir', text:'La première fois qu\'on a regardé la pluie ensemble.', from:'Nous deux', time:Date.now()-86400000*90 },
+  { type:'rêve', text:'Dormir une nuit dans une vraie cabane en forêt.', from:'Moi', time:Date.now()-86400000*45 },
+  { type:'pensée', text:'Tu me manques comme on manque de la chaleur en hiver.', from:'Mon amour', time:Date.now()-86400000*10 },
+  { type:'chanson', text:'La chanson qu\'on a écoutée sous la pluie.', from:'Nous deux', time:Date.now()-86400000*5 },
+];
 
-function addJournal() {
-  const v = document.getElementById('journal-input').value.trim();
-  if (!v) return;
-  const now = new Date();
-  S.journal.push({ date: now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}), text: v });
-  SS('cab-journal', S.journal);
-  document.getElementById('journal-input').value = '';
-  renderList('journal-list', S.journal, true);
+function renderMemories() {
+  const mems = getData('memories', defaultMemories);
+  const el = document.getElementById('souvenirs-list');
+  if(!el) return;
+  const icons = {souvenir:'🌿',chanson:'🎵',rêve:'✨',date:'📅',pensée:'💭'};
+  el.innerHTML = mems.slice().reverse().map(m=>`
+    <div class="memory-item">
+      <div class="memory-type">${icons[m.type]||'🌿'} ${m.type}</div>
+      <div class="memory-content">${m.text}</div>
+      <div class="memory-date">${m.from} · ${formatDate(m.time)}</div>
+    </div>
+  `).join('');
 }
 
 function addMemory() {
-  const v = document.getElementById('memory-input').value.trim();
-  if (!v) return;
-  S.memories.push({ emoji:'✨', text:`"${v}"` });
-  SS('cab-memories', S.memories);
-  document.getElementById('memory-input').value = '';
+  const inp = document.getElementById('memory-input');
+  const t = inp.value.trim();
+  if(!t) return;
+  const mems = getData('memories', defaultMemories);
+  const type = document.getElementById('memory-type').value;
+  mems.push({ type, text:t, from:currentUser==='compagnon'?'Mon amour':'Moi', time:Date.now() });
+  setData('memories', mems);
+  inp.value='';
+  renderMemories();
 }
 
-function drawMemory() {
-  const all = [...DEFAULT_MEMORIES, ...S.memories];
-  const m = all[Math.floor(Math.random()*all.length)];
-  const card = document.getElementById('memory-card');
-  card.style.opacity = '0';
-  setTimeout(() => {
-    document.getElementById('mem-emoji').textContent = m.emoji || '💫';
-    document.getElementById('mem-text').textContent  = m.text;
-    card.style.opacity = '1';
-  }, 250);
-  card.style.transition = 'opacity 0.25s ease';
+function showRandomMemory() {
+  const mems = getData('memories', defaultMemories);
+  if(!mems.length) return;
+  const m = mems[Math.floor(Math.random()*mems.length)];
+  const flash = document.getElementById('memory-flash');
+  flash.innerHTML = `<div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem;">${m.type}</div>"${m.text}"<div style="font-size:0.8rem;color:var(--muted);margin-top:0.6rem;">— ${m.from}</div>`;
+  flash.style.display='block';
+  flash.style.animation='none';
+  setTimeout(()=>{ flash.style.animation='fadeInOut 4s ease forwards'; }, 10);
+  setTimeout(()=>{ flash.style.display='none'; }, 4100);
 }
 
-function addEngrave() {
-  const v = document.getElementById('engrave-input').value.trim();
-  if (!v) return;
-  S.engrave.push(`"${v}" — ♥`);
-  SS('cab-engrave', S.engrave);
-  document.getElementById('engrave-input').value = '';
-  renderEngrave();
+// ===== CARNET =====
+const defaultJournal = [
+  { text:'La première nuit ici, la forêt était calme.', from:'Nous deux', time:Date.now()-86400000*60 },
+  { text:'Je pense à toi quand les étoiles apparaissent.', from:'Moi', time:Date.now()-86400000*3 },
+];
+
+function renderCarnet() {
+  const entries = getData('journal', defaultJournal);
+  const el = document.getElementById('carnet-list');
+  if(!el) return;
+  el.innerHTML = entries.slice().reverse().map(e=>`
+    <div class="journal-entry">
+      <div class="entry-date">${formatDate(e.time)}</div>
+      <div class="entry-text">"${e.text}"</div>
+      <div class="entry-author">— ${e.from}</div>
+    </div>
+  `).join('');
 }
 
-/* ── TREE NOTES ─────────────────────────────────── */
-function showNote(text) {
-  const p = document.getElementById('note-popup');
-  document.getElementById('note-text').textContent = text;
-  p.style.display = 'block';
-  document.getElementById('overlay').classList.add('open');
+function addCarnet() {
+  const inp = document.getElementById('carnet-input');
+  const t = inp.value.trim();
+  if(!t) return;
+  const entries = getData('journal', defaultJournal);
+  entries.push({ text:t, from:currentUser==='compagnon'?'Mon amour':'Moi', time:Date.now() });
+  setData('journal', entries);
+  inp.value='';
+  renderCarnet();
 }
 
-/* ── AMBIENT FIREFLIES (always a few) ───────────── */
-function spawnBaseFireflies() {
-  for (let i = 0; i < 5; i++) {
-    const ff = document.createElement('div');
-    ff.className = 'firefly';
-    ff.style.cssText = `
-      left:${Math.random()*70+15}%;top:${Math.random()*50+20}%;
-      --d:${(Math.random()*9+8).toFixed(1)}s;--dl:${(Math.random()*7).toFixed(1)}s;
-      --x1:${rnd(70)}px;--y1:${rnd(50)}px;
-      --x2:${rnd(70)}px;--y2:${rnd(50)}px;
-      --x3:${rnd(70)}px;--y3:${rnd(50)}px;
-      opacity:0.35;
-    `;
-    document.getElementById('scene').appendChild(ff);
+// ===== MODALS =====
+function openModal(name) {
+  if(name==='notes') renderNotes();
+  if(name==='engravings') renderEngravings();
+  if(name==='souvenirs') renderMemories();
+  if(name==='carnet') renderCarnet();
+  if(name==='meteo') updatePartnerMeteo();
+  document.getElementById('modal-'+name).classList.add('open');
+}
+function closeModal(name) {
+  document.getElementById('modal-'+name).classList.remove('open');
+}
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); });
+});
+
+// ===== SOUND =====
+function toggleSound() {
+  soundOn = !soundOn;
+  const btn = document.getElementById('sound-btn');
+  btn.textContent = soundOn ? '🔊' : '🎧';
+  btn.classList.toggle('active', soundOn);
+  if(soundOn){
+    const a = currentMeteo==='pluie' ? document.getElementById('rain-audio') : document.getElementById('forest-audio');
+    a.volume=0.3; a.play().catch(()=>{});
+  } else {
+    document.getElementById('rain-audio').pause();
+    document.getElementById('forest-audio').pause();
   }
 }
 
-/* ── INIT ───────────────────────────────────────── */
-buildStars();
-spawnBaseFireflies();
-renderPresence();
-if (S.weather !== 'none') applyWeather(S.weather);
+// ===== HELPERS =====
+function formatDate(ts) {
+  if(!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+}
 
-// Pre-render lists
-renderList('journal-list', S.journal, true);
-renderMailbox();
-renderEngrave();
+// Fireplace click for random memory
+document.getElementById('fireplace').addEventListener('click', showRandomMemory);
+document.getElementById('cabin-wrap').addEventListener('click', function(e){
+  const rect = this.getBoundingClientRect();
+  const relY = e.clientY - rect.top;
+  if(relY < rect.height * 0.7) showRandomMemory();
+});
+
+// ===== INIT =====
+createStars();
+createFireflies();
+updatePresence();
+setWeatherParticles('calme');
+
+// Restore meteo
+const savedMeteo = getData('meteo_moi', null) || getData('meteo_compagnon', null);
+if(savedMeteo && (Date.now()-savedMeteo.time) < 8*60*60*1000) {
+  setWeatherParticles(savedMeteo.type);
+}
+
+// Refresh presence every 30s
+setInterval(updatePresence, 30000);
+// Heartbeat — keep presence alive
+setInterval(()=>{ if(currentUser) setData('lastVisitor_'+currentUser, Date.now()); }, 60000);
+
+// Mark notes as read when opened
+document.getElementById('modal-notes').addEventListener('transitionend', function(){
+  if(this.classList.contains('open')){
+    const notes = getData('notes',[]).map(n=>({...n,read:true}));
+    setData('notes',notes);
+    setTimeout(renderNotes,200);
+  }
+});
 </script>
 </body>
 </html>
